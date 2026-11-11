@@ -1,37 +1,46 @@
 import { useEffect, useState } from 'react';
 import SplineStage from './components/SplineStage';
 import Onboarding from './screens/Onboarding';
+import Auth from './screens/Auth';
 import Universe from './screens/Universe';
 import Meditation from './screens/Meditation';
 import Portal from './screens/Portal';
 import Profile from './screens/Profile';
 import { isPortalUnlocked, setPortalState } from './lib/portal';
+import { getCurrentUser, onAuthChange, signOut, hasBackend, type AppUser } from './lib/auth';
+import { loadProgress, saveLevel } from './lib/progress';
 
-export type Screen = 'onboarding' | 'universe' | 'meditation' | 'portal' | 'profile';
+export type Screen = 'onboarding' | 'auth' | 'universe' | 'meditation' | 'portal' | 'profile';
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('onboarding');
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
-
-  // Demo local: niveles completados (luego vendrá de Supabase).
-  const [completed, setCompleted] = useState<number[]>(() => {
-    try { return JSON.parse(localStorage.getItem('sc-completed') || '[]'); } catch { return []; }
-  });
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [completed, setCompleted] = useState<number[]>([]);
   const [hasInvite] = useState(false);
 
   const unlocked = isPortalUnlocked(completed, hasInvite);
 
-  // Refleja el estado del portal en la escena 3D cuando cambie.
+  // Sesión de Supabase (si hay backend configurado).
+  useEffect(() => {
+    if (!hasBackend) return;
+    getCurrentUser().then(setUser);
+    return onAuthChange(setUser);
+  }, []);
+
+  // Carga el progreso (nube si hay sesión, si no local).
+  useEffect(() => {
+    loadProgress(user?.id ?? null).then(setCompleted);
+  }, [user]);
+
+  // Refleja el estado del portal en la escena 3D.
   useEffect(() => {
     setPortalState(unlocked ? 'unlocked' : 'locked');
   }, [unlocked]);
 
   const completeLevel = (id: number) => {
-    setCompleted((prev) => {
-      const next = prev.includes(id) ? prev : [...prev, id];
-      try { localStorage.setItem('sc-completed', JSON.stringify(next)); } catch { /* ignore */ }
-      return next;
-    });
+    setCompleted((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    void saveLevel(user?.id ?? null, id);
   };
 
   const openLevel = (id: number) => {
@@ -39,11 +48,22 @@ export default function App() {
     setScreen('meditation');
   };
 
+  const begin = () => setScreen(hasBackend && !user ? 'auth' : 'universe');
+
+  const doSignOut = async () => {
+    await signOut();
+    setUser(null);
+    setScreen('onboarding');
+  };
+
   return (
     <>
       <SplineStage />
       <main style={{ position: 'relative', zIndex: 1, height: '100%', width: '100%' }}>
-        {screen === 'onboarding' && <Onboarding onBegin={() => setScreen('universe')} />}
+        {screen === 'onboarding' && <Onboarding onBegin={begin} />}
+        {screen === 'auth' && (
+          <Auth onAuthed={() => setScreen('universe')} onGuest={() => setScreen('universe')} />
+        )}
         {screen === 'universe' && (
           <Universe
             completed={completed}
@@ -54,17 +74,17 @@ export default function App() {
           />
         )}
         {screen === 'meditation' && (
-          <Meditation
-            level={selectedLevel}
-            onClose={() => setScreen('universe')}
-            onComplete={completeLevel}
-          />
+          <Meditation level={selectedLevel} onClose={() => setScreen('universe')} onComplete={completeLevel} />
         )}
-        {screen === 'portal' && (
-          <Portal unlocked={unlocked} onBack={() => setScreen('universe')} />
-        )}
+        {screen === 'portal' && <Portal unlocked={unlocked} onBack={() => setScreen('universe')} />}
         {screen === 'profile' && (
-          <Profile completed={completed} unlocked={unlocked} onBack={() => setScreen('universe')} />
+          <Profile
+            completed={completed}
+            unlocked={unlocked}
+            user={user}
+            onSignOut={doSignOut}
+            onBack={() => setScreen('universe')}
+          />
         )}
       </main>
     </>

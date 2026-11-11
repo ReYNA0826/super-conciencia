@@ -1,14 +1,25 @@
 import { useLang } from '../i18n/LanguageContext';
 import { LEVELS } from '../data/levels';
+import type { AppUser } from '../lib/auth';
 
-type Props = { completed: number[]; unlocked: boolean; onBack: () => void };
+type Props = {
+  completed: number[];
+  unlocked: boolean;
+  user: AppUser | null;
+  onSignOut: () => void;
+  onBack: () => void;
+};
 
-export default function Profile({ completed, unlocked, onBack }: Props) {
+export default function Profile({ completed, unlocked, user, onSignOut, onBack }: Props) {
   const { lang, setLang, t } = useLang();
 
   return (
     <div style={wrap}>
       <h2 style={{ color: 'var(--gold)', letterSpacing: '0.12em' }}>{t('profile')}</h2>
+
+      {user?.email && (
+        <p style={{ fontSize: 12.5, opacity: 0.8, marginTop: -6 }}>{user.email}</p>
+      )}
 
       <section className="sc-panel" style={{ padding: 18, width: '100%', maxWidth: 420 }}>
         <h3 style={{ fontSize: 13, letterSpacing: '0.1em', marginTop: 0 }}>{t('progress')}</h3>
@@ -40,9 +51,14 @@ export default function Profile({ completed, unlocked, onBack }: Props) {
         </div>
       </section>
 
-      <button className="sc-btn" style={{ marginTop: 22 }} onClick={onBack}>
-        {t('back')}
-      </button>
+      <div style={{ display: 'flex', gap: 12, marginTop: 22 }}>
+        <button className="sc-btn" onClick={onBack}>{t('back')}</button>
+        {user && (
+          <button className="sc-btn" onClick={onSignOut} style={{ background: 'rgba(60,30,80,0.5)' }}>
+            {t('signOut')}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
