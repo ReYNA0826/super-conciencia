@@ -4,12 +4,12 @@ import { LEVELS } from '../data/levels';
 type Props = {
   completed: number[];
   unlocked: boolean;
+  onOpenLevel: (id: number) => void;
   onOpenPortal: () => void;
   onOpenProfile: () => void;
-  onComplete: (id: number) => void;
 };
 
-export default function Universe({ completed, unlocked, onOpenPortal, onOpenProfile, onComplete }: Props) {
+export default function Universe({ completed, unlocked, onOpenLevel, onOpenPortal, onOpenProfile }: Props) {
   const { lang, t } = useLang();
 
   return (
@@ -30,7 +30,7 @@ export default function Universe({ completed, unlocked, onOpenPortal, onOpenProf
             <button
               key={lvl.id}
               className="sc-panel"
-              onClick={() => (isFinal ? onOpenPortal() : onComplete(lvl.id))}
+              onClick={() => (isFinal ? onOpenPortal() : onOpenLevel(lvl.id))}
               style={{
                 padding: 14,
                 textAlign: 'left',
@@ -42,6 +42,7 @@ export default function Universe({ completed, unlocked, onOpenPortal, onOpenProf
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ ...dot, background: lvl.color }} />
                 <strong style={{ fontSize: 13 }}>{lang === 'es' ? lvl.es : lvl.en}</strong>
+                {isDone && <span style={{ marginLeft: 'auto', fontSize: 12, color: lvl.color }}>✓</span>}
               </div>
               <div style={{ fontSize: 11, opacity: 0.75, marginTop: 6 }}>
                 {locked ? t('sealed') : lang === 'es' ? lvl.intentionEs : lvl.intentionEn}

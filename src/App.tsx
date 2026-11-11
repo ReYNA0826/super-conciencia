@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react';
 import SplineStage from './components/SplineStage';
 import Onboarding from './screens/Onboarding';
 import Universe from './screens/Universe';
+import Meditation from './screens/Meditation';
 import Portal from './screens/Portal';
 import Profile from './screens/Profile';
 import { isPortalUnlocked, setPortalState } from './lib/portal';
 
-export type Screen = 'onboarding' | 'universe' | 'portal' | 'profile';
+export type Screen = 'onboarding' | 'universe' | 'meditation' | 'portal' | 'profile';
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('onboarding');
+  const [selectedLevel, setSelectedLevel] = useState<number>(1);
 
   // Demo local: niveles completados (luego vendrá de Supabase).
   const [completed, setCompleted] = useState<number[]>(() => {
@@ -32,6 +34,11 @@ export default function App() {
     });
   };
 
+  const openLevel = (id: number) => {
+    setSelectedLevel(id);
+    setScreen('meditation');
+  };
+
   return (
     <>
       <SplineStage />
@@ -41,8 +48,15 @@ export default function App() {
           <Universe
             completed={completed}
             unlocked={unlocked}
+            onOpenLevel={openLevel}
             onOpenPortal={() => setScreen('portal')}
             onOpenProfile={() => setScreen('profile')}
+          />
+        )}
+        {screen === 'meditation' && (
+          <Meditation
+            level={selectedLevel}
+            onClose={() => setScreen('universe')}
             onComplete={completeLevel}
           />
         )}

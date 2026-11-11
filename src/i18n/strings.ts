@@ -16,6 +16,13 @@ export const STRINGS = {
     progress: 'Progreso',
     invitation: 'Invitación',
     language: 'Idioma',
+    level: 'Nivel',
+    close: 'Cerrar',
+    pause: 'Pausar',
+    play: 'Reanudar',
+    meditationDone: 'Nivel completado. Lleva esta calma contigo.',
+    voiceSoon: 'La voz guía llegará pronto',
+    realmName: 'El Reino del Éter',
   },
   en: {
     tagline: 'A cosmic journey through consciousness',
@@ -32,6 +39,13 @@ export const STRINGS = {
     progress: 'Progress',
     invitation: 'Invitation',
     language: 'Language',
+    level: 'Level',
+    close: 'Close',
+    pause: 'Pause',
+    play: 'Resume',
+    meditationDone: 'Level complete. Carry this calm with you.',
+    voiceSoon: 'Guided voice coming soon',
+    realmName: 'The Realm of Aether',
   },
 } as const;
 
