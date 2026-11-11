@@ -32,12 +32,13 @@ export default function Auth({ onAuthed, onGuest }: Props) {
   };
 
   return (
-    <div style={wrap}>
-      <h1 style={{ fontSize: 24, letterSpacing: '0.12em', color: 'var(--gold)', margin: 0 }}>
+    <div style={{ position: 'relative', height: '100%' }}>
+    <div className="sc-sheet">
+      <h1 style={{ fontSize: 20, letterSpacing: '0.12em', color: 'var(--gold)', margin: 0 }}>
         {t('welcome')}
       </h1>
 
-      <form onSubmit={submit} style={{ width: '100%', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 12, marginTop: 24 }}>
+      <form onSubmit={submit} style={{ width: '100%', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
         <input
           type="email"
           inputMode="email"
@@ -73,20 +74,10 @@ export default function Auth({ onAuthed, onGuest }: Props) {
         {t('guest')}
       </button>
     </div>
+    </div>
   );
 }
 
-const wrap: React.CSSProperties = {
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  textAlign: 'center',
-  padding: '0 26px',
-  paddingTop: 'var(--safe-top)',
-  paddingBottom: 'var(--safe-bottom)',
-};
 const input: React.CSSProperties = {
   padding: '13px 16px',
   borderRadius: 14,
@@ -97,7 +88,7 @@ const input: React.CSSProperties = {
   outline: 'none',
 };
 const linkBtn: React.CSSProperties = {
-  marginTop: 18,
+  marginTop: 12,
   background: 'none',
   border: 'none',
   color: 'var(--ink)',

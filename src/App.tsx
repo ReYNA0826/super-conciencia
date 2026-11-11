@@ -20,6 +20,7 @@ export default function App() {
   const [hasInvite] = useState(false);
 
   const unlocked = isPortalUnlocked(completed, hasInvite);
+  const dimScene = screen === 'meditation' || screen === 'profile' || screen === 'portal';
 
   // Sesión de Supabase (si hay backend configurado).
   useEffect(() => {
@@ -59,7 +60,18 @@ export default function App() {
   return (
     <>
       <SplineStage />
-      <main style={{ position: 'relative', zIndex: 1, height: '100%', width: '100%' }}>
+      <main
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          height: '100%',
+          width: '100%',
+          // En pantallas de enfoque (meditación, perfil, portal) se oscurece la escena
+          // para que el texto no compita con los planetas.
+          background: dimScene ? 'rgba(7, 10, 30, 0.86)' : 'transparent',
+          transition: 'background 0.6s ease',
+        }}
+      >
         {screen === 'onboarding' && <Onboarding onBegin={begin} />}
         {screen === 'auth' && (
           <Auth onAuthed={() => setScreen('universe')} onGuest={() => setScreen('universe')} />

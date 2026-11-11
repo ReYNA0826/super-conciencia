@@ -46,3 +46,55 @@ button {
   transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 .sc-btn:hover { transform: scale(1.04); box-shadow: 0 0 20px rgba(246, 227, 168, 0.4); }
+
+/*
+ * Hoja inferior: la escena de Spline ya dibuja su propio título, portal y planetas,
+ * así que la interfaz de la app vive abajo, sobre un degradado oscuro, sin encimarse.
+ */
+.sc-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 72px 20px calc(var(--safe-bottom) + 24px);
+  background: linear-gradient(
+    to bottom,
+    rgba(7, 10, 30, 0) 0%,
+    rgba(7, 10, 30, 0.9) 72px,
+    rgba(7, 10, 30, 0.97) 100%
+  );
+}
+
+/* Selector de idioma compacto, en la esquina superior derecha. */
+.sc-lang {
+  position: absolute;
+  top: calc(var(--safe-top) + 12px);
+  right: 12px;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(7, 10, 30, 0.55);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.sc-lang button {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 6px 10px;
+  border-radius: 999px;
+  opacity: 0.6;
+}
+.sc-lang button[aria-pressed='true'] {
+  background: rgba(80, 50, 150, 0.7);
+  color: var(--gold);
+  opacity: 1;
+}
