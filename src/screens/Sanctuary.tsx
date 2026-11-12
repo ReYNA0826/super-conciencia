@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n/LanguageContext';
 import type { StringKey } from '../i18n/strings';
-import { setSanctuaryState } from '../lib/sceneBridge';
+import { setParticipants, setSanctuaryState } from '../lib/sceneBridge';
+import { joinSanctuary } from '../lib/presence';
 import { pauseAmbient, resumeAmbient, startAmbient, stopAmbient } from '../lib/ambient';
 import { buildSanctuarySession } from '../data/sanctuary';
 import { guruConfigured, startGuru, type GuruSession, type GuruStatus } from '../lib/guru';
@@ -43,6 +44,17 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
   const [guruNote, setGuruNote] = useState(false);
   const guru = useRef<GuruSession | null>(null);
   const guruRun = useRef(0);
+
+  // Meditación colectiva: cuántas presencias hay en el santuario en este momento.
+  // La sala 3D las refleja (setParticipants) y la interfaz lo dice en una línea.
+  const [presences, setPresences] = useState<number | null>(null);
+  useEffect(() => joinSanctuary((count) => {
+    setPresences(count);
+    setParticipants(count);
+  }), []);
+  const presenceLine = presences === null ? null
+    : presences <= 1 ? t('presenceAlone')
+      : t('presenceMany').replace('{n}', String(presences));
 
   const update = (patch: Partial<SanctuaryPrefs>) => {
     const next = { ...prefs, ...patch };
@@ -145,6 +157,7 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
           <h2 style={title}>{t('sanctuaryName')}</h2>
           <p style={lead}>{t('sanctuaryWelcome')}</p>
           <p style={body}>{t('sanctuaryIntro')}</p>
+          {presenceLine && <span style={{ ...note, color: 'var(--gold)', opacity: 0.85 }} role="status">{presenceLine}</span>}
           <div style={stack}>
             <button className="sc-btn" onClick={() => setStep('setup')}>{t('enterMeditation')}</button>
             <button className="sc-btn" onClick={() => { setGuruNote(false); setStep('consent'); }}>{t('talkToGuru')}</button>
@@ -190,7 +203,9 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
               <span key={i} style={{ ...dot, background: i <= idx ? 'var(--gold)' : 'rgba(255,255,255,0.22)' }} />
             ))}
           </div>
-          <span style={{ ...note, marginTop: 10 }}>{clock}</span>
+          <span style={{ ...note, marginTop: 10 }}>
+            {clock}{presences !== null && presences > 1 ? ` · ${t('presenceMany').replace('{n}', String(presences))}` : ''}
+          </span>
           <div style={{ display: 'flex', gap: 18, justifyContent: 'center', alignItems: 'center', marginTop: 10 }}>
             <button className="sc-btn" style={{ padding: '9px 22px', fontSize: 13 }} onClick={togglePlaying}>
               {playing ? t('pause') : t('play')}

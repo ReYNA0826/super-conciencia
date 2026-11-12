@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import SplineStage from './components/SplineStage';
 import Onboarding from './screens/Onboarding';
 import Auth from './screens/Auth';
@@ -11,6 +11,7 @@ import { getCurrentUser, onAuthChange, signOut, hasBackend, type AppUser } from 
 import { loadProgress, saveLevel } from './lib/progress';
 import { unlockAmbient } from './lib/ambient';
 import { listenForAuthLinks } from './lib/authLinks';
+import { NO_INVITES, loadInviteState, type InviteState } from './lib/invitations';
 
 export type Screen = 'onboarding' | 'auth' | 'universe' | 'meditation' | 'portal' | 'profile';
 
@@ -19,10 +20,19 @@ export default function App() {
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
   const [user, setUser] = useState<AppUser | null>(null);
   const [completed, setCompleted] = useState<number[]>([]);
-  const [hasInvite] = useState(false);
+  const [invites, setInvites] = useState<InviteState>(NO_INVITES);
   const [authNotice, setAuthNotice] = useState(false);
 
-  const unlocked = isPortalUnlocked(completed, hasInvite);
+  const userId = user?.id ?? null;
+  const unlocked = isPortalUnlocked(completed, invites.hasInvite);
+  // Invitar es para quien completó los seis niveles con una cuenta (el servidor lo vuelve a comprobar).
+  const canInvite = Boolean(userId) && [1, 2, 3, 4, 5, 6].every((n) => completed.includes(n));
+
+  // Invitaciones al nivel 7: las que creó esta persona y si canjeó alguna.
+  const refreshInvites = useCallback(() => {
+    void loadInviteState(userId).then(setInvites);
+  }, [userId]);
+  useEffect(refreshInvites, [refreshInvites]);
   const inAether = screen === 'portal' && unlocked;
   const dimScene = screen === 'meditation' || screen === 'profile' || (screen === 'portal' && !unlocked);
 
@@ -109,13 +119,22 @@ export default function App() {
           <Meditation level={selectedLevel} onClose={() => setScreen('universe')} onComplete={completeLevel} />
         )}
         {screen === 'portal' && (
-          <Portal unlocked={unlocked} onBack={() => setScreen('universe')} onComplete={() => completeLevel(7)} />
+          <Portal
+            unlocked={unlocked}
+            signedIn={Boolean(userId)}
+            onRedeemed={refreshInvites}
+            onBack={() => setScreen('universe')}
+            onComplete={() => completeLevel(7)}
+          />
         )}
         {screen === 'profile' && (
           <Profile
             completed={completed}
             unlocked={unlocked}
             user={user}
+            invites={invites.mine}
+            canInvite={canInvite}
+            onInvitesChanged={refreshInvites}
             onSignOut={doSignOut}
             onDeleted={() => { setUser(null); setCompleted([]); setScreen('onboarding'); }}
             onBack={() => setScreen('universe')}
