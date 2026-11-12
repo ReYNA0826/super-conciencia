@@ -3,6 +3,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { LEVELS } from '../data/levels';
 import { MEDITATIONS } from '../data/meditations';
 import { setSanctuaryState } from '../lib/sceneBridge';
+import WorldBackdrop, { WORLD_IMAGE } from '../components/WorldBackdrop';
 
 type Props = {
   level: number;
@@ -46,10 +47,11 @@ export default function Meditation({ level, onClose, onComplete }: Props) {
   const accent = info?.color ?? '#9a6ff0';
 
   return (
-    <div style={wrap}>
+    <div style={wrap} className="sc-over">
+      {WORLD_IMAGE[level] && <WorldBackdrop src={WORLD_IMAGE[level]} />}
       <button onClick={onClose} style={closeBtn} aria-label={t('close')}>✕</button>
 
-      <div style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: 'center', position: 'absolute', top: 'calc(var(--safe-top) + 22px)', left: 60, right: 60, textShadow: '0 1px 10px rgba(7,10,30,0.9)' }}>
         <span style={{ fontSize: 11, letterSpacing: '0.16em', opacity: 0.7, color: accent }}>
           {t('level')} {level}
         </span>
@@ -58,9 +60,9 @@ export default function Meditation({ level, onClose, onComplete }: Props) {
         </h2>
       </div>
 
-      {/* orbe que respira */}
-      <div style={{ ...orb, boxShadow: `0 0 80px 10px ${accent}66`, background:
-        `radial-gradient(circle at 50% 40%, #ffffff 0%, ${accent} 45%, #2a1550 100%)` }} />
+      {/* orbe que respira (solo si el mundo no tiene ilustración propia) */}
+      {!WORLD_IMAGE[level] && <div style={{ ...orb, boxShadow: `0 0 80px 10px ${accent}66`, background:
+        `radial-gradient(circle at 50% 40%, #ffffff 0%, ${accent} 45%, #2a1550 100%)` }} />}
 
       {!done ? (
         <p style={phaseText}>{lang === 'es' ? phase?.es : phase?.en}</p>
@@ -102,15 +104,17 @@ export default function Meditation({ level, onClose, onComplete }: Props) {
 }
 
 const wrap: React.CSSProperties = {
+  position: 'relative',
+  zIndex: 0,
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  justifyContent: 'center',
-  gap: 22,
+  justifyContent: 'flex-end',
+  gap: 18,
   padding: '0 26px',
   paddingTop: 'var(--safe-top)',
-  paddingBottom: 'var(--safe-bottom)',
+  paddingBottom: 'calc(var(--safe-bottom) + 36px)',
   textAlign: 'center',
 };
 const orb: React.CSSProperties = {
@@ -126,6 +130,7 @@ const phaseText: React.CSSProperties = {
   minHeight: 56,
   margin: 0,
   color: 'var(--ink)',
+  textShadow: '0 1px 12px rgba(7,10,30,0.95)',
   transition: 'opacity .5s ease',
 };
 const closeBtn: React.CSSProperties = {

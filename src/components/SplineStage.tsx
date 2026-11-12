@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { markSceneReady } from '../lib/sceneBridge';
+import WorldBackdrop, { PORTAL_IMAGE } from './WorldBackdrop';
 
 // @splinetool/react-spline se carga de forma diferida (es pesado).
 const Spline = lazy(() => import('@splinetool/react-spline'));
@@ -15,31 +16,10 @@ export default function SplineStage({ aether = false }: { aether?: boolean }) {
   // Universo (planetas) en casi toda la app; la sala del Éter solo al entrar al nivel 7.
   const SCENE_URL = aether ? AETHER_URL ?? UNIVERSE_URL : UNIVERSE_URL;
   if (!SCENE_URL) {
+    // Sin escena 3D publicada: el portal pintado como fondo.
     return (
-      <div
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background:
-            'radial-gradient(60% 50% at 50% 35%, #2a1a5e 0%, #140a2e 45%, #070a1e 100%)',
-          zIndex: 0,
-        }}
-        aria-hidden
-      >
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 24,
-            left: 0,
-            right: 0,
-            textAlign: 'center',
-            fontSize: 12,
-            letterSpacing: '0.1em',
-            opacity: 0.5,
-          }}
-        >
-          Esperando la escena de Spline · set VITE_SPLINE_SCENE_URL
-        </div>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0 }} aria-hidden>
+        <WorldBackdrop src={PORTAL_IMAGE} breathe={false} />
       </div>
     );
   }

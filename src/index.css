@@ -107,3 +107,15 @@ button {
 #panel, #sc-eter-header { display: none !important; }
 /* El HTML de la escena define estilos globales para <button>; los neutralizamos en los nuestros. */
 .sc-btn { flex: none; min-height: 0; }
+
+/* Fondos pintados de los mundos: deriva lenta y luz que respira (8 s, sin marcar ritmo). */
+@keyframes scWorldDrift { from { transform: scale(1); } to { transform: scale(1.06); } }
+@keyframes scWorldGlow { 0%,100% { opacity: .35; } 50% { opacity: .8; } }
+.sc-world { animation: scWorldDrift 40s ease-in-out infinite alternate; }
+.sc-world-glow { animation: scWorldGlow 8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .sc-world, .sc-world-glow { animation: none; }
+}
+
+/* Todo lo que va sobre un fondo pintado queda por encima de él. */
+.sc-over > *:not([aria-hidden]) { position: relative; z-index: 1; }
