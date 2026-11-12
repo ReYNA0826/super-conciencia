@@ -138,7 +138,6 @@ export default function Profile({
             </button>
           ))}
         </div>
-        <p style={hint}>{t('voicePending')}</p>
       </section>
 
       <section className="sc-panel" style={{ padding: 18, width: '100%', maxWidth: 420, marginTop: 14 }}>
