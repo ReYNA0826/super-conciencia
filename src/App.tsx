@@ -9,6 +9,7 @@ import Profile from './screens/Profile';
 import { isPortalUnlocked, setPortalState } from './lib/portal';
 import { getCurrentUser, onAuthChange, signOut, hasBackend, type AppUser } from './lib/auth';
 import { loadProgress, saveLevel } from './lib/progress';
+import { unlockAmbient } from './lib/ambient';
 
 export type Screen = 'onboarding' | 'auth' | 'universe' | 'meditation' | 'portal' | 'profile';
 
@@ -46,6 +47,7 @@ export default function App() {
   };
 
   const openLevel = (id: number) => {
+    unlockAmbient(); // dentro del toque: permite que la música arranque en el teléfono
     setSelectedLevel(id);
     setScreen('meditation');
   };

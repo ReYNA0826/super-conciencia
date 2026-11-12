@@ -3,6 +3,8 @@ import { useLang } from '../i18n/LanguageContext';
 import { LEVELS } from '../data/levels';
 import { MEDITATIONS } from '../data/meditations';
 import { setSanctuaryState } from '../lib/sceneBridge';
+import { pauseAmbient, resumeAmbient, startAmbient, stopAmbient } from '../lib/ambient';
+import { loadSanctuaryPrefs } from '../lib/prefs';
 import WorldBackdrop, { WORLD_IMAGE } from '../components/WorldBackdrop';
 
 type Props = {
@@ -42,6 +44,20 @@ export default function Meditation({ level, onClose, onComplete }: Props) {
     setSanctuaryState(done || isLast ? 'closing' : 'meditating');
   }, [done, isLast]);
   useEffect(() => () => setSanctuaryState('resting'), []);
+
+  // Música de fondo: la preferencia guardada (se elige en el Santuario del Éter).
+  // Entra al abrir, se pausa con la práctica y sale con suavidad al terminar o cerrar.
+  useEffect(() => {
+    startAmbient(loadSanctuaryPrefs().music);
+    return () => stopAmbient(0.4);
+  }, []);
+  useEffect(() => {
+    if (done) stopAmbient(6);
+  }, [done]);
+  const togglePlaying = () => {
+    if (playing) pauseAmbient(); else resumeAmbient();
+    setPlaying(!playing);
+  };
 
   const phase = phases[idx];
   const accent = info?.color ?? '#9a6ff0';
@@ -83,7 +99,7 @@ export default function Meditation({ level, onClose, onComplete }: Props) {
 
       <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
         {!done ? (
-          <button className="sc-btn" onClick={() => setPlaying((p) => !p)} style={{ padding: '10px 26px' }}>
+          <button className="sc-btn" onClick={togglePlaying} style={{ padding: '10px 26px' }}>
             {playing ? t('pause') : t('play')}
           </button>
         ) : (

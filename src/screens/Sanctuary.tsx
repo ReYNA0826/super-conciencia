@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n/LanguageContext';
 import type { StringKey } from '../i18n/strings';
 import { setSanctuaryState } from '../lib/sceneBridge';
+import { pauseAmbient, resumeAmbient, startAmbient, stopAmbient } from '../lib/ambient';
 import { buildSanctuarySession } from '../data/sanctuary';
 import { guruConfigured, startGuru, type GuruSession, type GuruStatus } from '../lib/guru';
 import {
@@ -78,7 +79,19 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
     setElapsed(0);
     setPlaying(true);
     setStep('meditating');
+    startAmbient(prefs.music); // dentro del toque: los teléfonos lo exigen para sonar
   };
+
+  const togglePlaying = () => {
+    if (playing) pauseAmbient(); else resumeAmbient();
+    setPlaying(!playing);
+  };
+
+  // La música acompaña solo la práctica: sale con suavidad al cerrar o al irse.
+  useEffect(() => {
+    if (step !== 'meditating') stopAmbient(4);
+  }, [step]);
+  useEffect(() => () => stopAmbient(0.4), []);
 
   // ── La sala acompaña: Meditando en la práctica, Cierre al final, Reposo en lo demás ──
   const lastPhase = idx === phases.length - 1;
@@ -164,7 +177,7 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
             ))}
           </Row>
           <button className="sc-btn" style={{ marginTop: 18 }} onClick={beginMeditation}>{t('beginMeditation')}</button>
-          <span style={note}>{t('soundSoon')}</span>
+          <span style={note}>{t('voiceSoon')}</span>
           <button style={quiet} onClick={() => setStep('entry')}>{t('back')}</button>
         </Panel>
       )}
@@ -179,7 +192,7 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
           </div>
           <span style={{ ...note, marginTop: 10 }}>{clock}</span>
           <div style={{ display: 'flex', gap: 18, justifyContent: 'center', alignItems: 'center', marginTop: 10 }}>
-            <button className="sc-btn" style={{ padding: '9px 22px', fontSize: 13 }} onClick={() => setPlaying((p) => !p)}>
+            <button className="sc-btn" style={{ padding: '9px 22px', fontSize: 13 }} onClick={togglePlaying}>
               {playing ? t('pause') : t('play')}
             </button>
             <button style={{ ...quiet, marginTop: 0 }} onClick={() => setStep('closing')}>{t('leaveGently')}</button>
