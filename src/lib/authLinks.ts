@@ -22,7 +22,8 @@ export function authRedirectUrl(): string | undefined {
   return typeof window !== 'undefined' ? window.location.origin : undefined;
 }
 
-export type AuthLinkResult = 'signed-in' | 'error';
+/** 'recovery' = llegó por "restablecer contraseña": ya tiene sesión y falta que escriba la nueva. */
+export type AuthLinkResult = 'signed-in' | 'recovery' | 'error';
 
 const handled = new Set<string>();
 
@@ -48,7 +49,8 @@ async function consume(url: string): Promise<AuthLinkResult | null> {
   const refresh_token = params.get('refresh_token');
   if (access_token && refresh_token) {
     const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-    return error ? 'error' : 'signed-in';
+    if (error) return 'error';
+    return params.get('type') === 'recovery' ? 'recovery' : 'signed-in';
   }
 
   return 'error';

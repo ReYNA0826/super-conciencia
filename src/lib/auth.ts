@@ -33,6 +33,32 @@ export async function signUpWithPassword(email: string, password: string): Promi
   return { error: error?.message ?? null };
 }
 
+/**
+ * Envía el correo de "restablecer contraseña". El enlace abre la app en la pantalla
+ * de contraseña nueva (ver authLinks.ts). Supabase no revela si el correo existe.
+ */
+export async function sendPasswordReset(email: string): Promise<{ error: string | null }> {
+  if (!supabase) return { error: 'no-backend' };
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: authRedirectUrl() });
+  return { error: error?.message ?? null };
+}
+
+/** Guarda la contraseña nueva de quien llegó por el enlace de restablecer (ya con sesión). */
+export async function updatePassword(password: string): Promise<{ error: string | null }> {
+  if (!supabase) return { error: 'no-backend' };
+  const { error } = await supabase.auth.updateUser({ password });
+  return { error: error?.message ?? null };
+}
+
+/** En la web, Supabase avisa con este evento cuando alguien llega por el enlace de restablecer. */
+export function onPasswordRecovery(cb: () => void): () => void {
+  if (!supabase) return () => { /* noop */ };
+  const { data } = supabase.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') cb();
+  });
+  return () => data.subscription.unsubscribe();
+}
+
 export async function signOut(): Promise<void> {
   if (!supabase) return;
   await supabase.auth.signOut();

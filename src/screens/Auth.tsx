@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
-import { signInWithPassword, signUpWithPassword } from '../lib/auth';
+import { sendPasswordReset, signInWithPassword, signUpWithPassword } from '../lib/auth';
 
 type Props = {
   /** Llegó por un enlace de correo que ya no sirve: se le explica y se le invita a entrar. */
@@ -9,9 +9,12 @@ type Props = {
   onGuest: () => void;
 };
 
+/** 'in' entrar · 'up' crear cuenta · 'forgot' pedir el enlace para restablecer la contraseña */
+type Mode = 'in' | 'up' | 'forgot';
+
 export default function Auth({ linkExpired = false, onAuthed, onGuest }: Props) {
   const { t } = useLang();
-  const [mode, setMode] = useState<'in' | 'up'>('in');
+  const [mode, setMode] = useState<Mode>('in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -20,11 +23,22 @@ export default function Auth({ linkExpired = false, onAuthed, onGuest }: Props) 
     if (linkExpired) setMsg(t('linkExpired'));
   }, [linkExpired, t]);
 
+  const go = (next: Mode) => { setMode(next); setMsg(null); setPassword(''); };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (busy) return;
     setBusy(true);
     setMsg(null);
+
+    if (mode === 'forgot') {
+      const { error } = await sendPasswordReset(email.trim());
+      setBusy(false);
+      // Mismo mensaje exista o no la cuenta: no se revela quién está registrado.
+      setMsg(t(error ? 'resetError' : 'resetSent'));
+      return;
+    }
+
     const fn = mode === 'in' ? signInWithPassword : signUpWithPassword;
     const { error } = await fn(email.trim(), password);
     setBusy(false);
@@ -40,8 +54,11 @@ export default function Auth({ linkExpired = false, onAuthed, onGuest }: Props) 
     <div style={{ position: 'relative', height: '100%' }}>
     <div className="sc-sheet">
       <h1 style={{ fontSize: 20, letterSpacing: '0.12em', color: 'var(--gold)', margin: 0 }}>
-        {t('welcome')}
+        {mode === 'forgot' ? t('resetTitle') : t('welcome')}
       </h1>
+      {mode === 'forgot' && (
+        <p style={{ fontSize: 12.5, lineHeight: 1.5, opacity: 0.8, margin: '10px 0 0', maxWidth: 320 }}>{t('resetIntro')}</p>
+      )}
 
       <form onSubmit={submit} style={{ width: '100%', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
         <input
@@ -54,28 +71,38 @@ export default function Auth({ linkExpired = false, onAuthed, onGuest }: Props) 
           required
           style={input}
         />
-        <input
-          type="password"
-          autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
-          placeholder={t('password')}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-          style={input}
-        />
+        {mode !== 'forgot' && (
+          <input
+            type="password"
+            autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
+            placeholder={t('password')}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            style={input}
+          />
+        )}
         <button type="submit" className="sc-btn" disabled={busy} style={{ marginTop: 6 }}>
-          {mode === 'in' ? t('signIn') : t('signUp')}
+          {busy ? '…' : mode === 'in' ? t('signIn') : mode === 'up' ? t('signUp') : t('sendResetLink')}
         </button>
       </form>
 
       {msg && <p style={{ fontSize: 12, opacity: 0.85, marginTop: 14, maxWidth: 320, color: '#ffd9a0' }}>{msg}</p>}
 
-      <button onClick={() => { setMode(mode === 'in' ? 'up' : 'in'); setMsg(null); }} style={linkBtn}>
-        {mode === 'in' ? t('toSignUp') : t('toSignIn')}
-      </button>
+      {mode === 'in' && (
+        <button type="button" onClick={() => go('forgot')} style={linkBtn}>{t('forgotPassword')}</button>
+      )}
 
-      <button onClick={onGuest} style={{ ...linkBtn, opacity: 0.6, marginTop: 4 }}>
+      {mode === 'forgot' ? (
+        <button type="button" onClick={() => go('in')} style={linkBtn}>{t('toSignIn')}</button>
+      ) : (
+        <button type="button" onClick={() => go(mode === 'in' ? 'up' : 'in')} style={linkBtn}>
+          {mode === 'in' ? t('toSignUp') : t('toSignIn')}
+        </button>
+      )}
+
+      <button type="button" onClick={onGuest} style={{ ...linkBtn, opacity: 0.6, marginTop: 4 }}>
         {t('guest')}
       </button>
     </div>

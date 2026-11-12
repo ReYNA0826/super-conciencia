@@ -9,14 +9,15 @@ import Meditation from './screens/Meditation';
 import Portal from './screens/Portal';
 import Profile from './screens/Profile';
 import { isPortalUnlocked, setPortalState } from './lib/portal';
-import { getCurrentUser, onAuthChange, signOut, hasBackend, type AppUser } from './lib/auth';
+import { getCurrentUser, onAuthChange, onPasswordRecovery, signOut, hasBackend, type AppUser } from './lib/auth';
+import NewPassword from './screens/NewPassword';
 import { loadProgress, saveLevel } from './lib/progress';
 import { unlockAmbient } from './lib/ambient';
 import { unlockVoice } from './lib/voice';
 import { listenForAuthLinks } from './lib/authLinks';
 import { NO_INVITES, loadInviteState, type InviteState } from './lib/invitations';
 
-export type Screen = 'onboarding' | 'auth' | 'universe' | 'meditation' | 'portal' | 'profile';
+export type Screen = 'onboarding' | 'auth' | 'newPassword' | 'universe' | 'meditation' | 'portal' | 'profile';
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('onboarding');
@@ -51,11 +52,17 @@ export default function App() {
     if (result === 'signed-in') {
       setAuthNotice(false);
       setScreen('universe');
+    } else if (result === 'recovery') {
+      setAuthNotice(false);
+      setScreen('newPassword'); // llegó por "restablecer contraseña"
     } else {
       setAuthNotice(true);
       setScreen('auth');
     }
   }), []);
+
+  // En la web, el enlace de restablecer lo detecta Supabase solo y avisa con un evento.
+  useEffect(() => onPasswordRecovery(() => setScreen('newPassword')), []);
 
   // Carga el progreso (nube si hay sesión, si no local).
   useEffect(() => {
@@ -120,6 +127,7 @@ export default function App() {
             onGuest={() => { setAuthNotice(false); setScreen('universe'); }}
           />
         )}
+        {screen === 'newPassword' && <NewPassword onDone={() => setScreen('universe')} />}
         {screen === 'universe' && (
           <Universe
             completed={completed}
