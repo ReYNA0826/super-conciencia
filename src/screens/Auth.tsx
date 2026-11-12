@@ -1,19 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
 import { signInWithPassword, signUpWithPassword } from '../lib/auth';
 
 type Props = {
+  /** Llegó por un enlace de correo que ya no sirve: se le explica y se le invita a entrar. */
+  linkExpired?: boolean;
   onAuthed: () => void;
   onGuest: () => void;
 };
 
-export default function Auth({ onAuthed, onGuest }: Props) {
+export default function Auth({ linkExpired = false, onAuthed, onGuest }: Props) {
   const { t } = useLang();
   const [mode, setMode] = useState<'in' | 'up'>('in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(linkExpired ? t('linkExpired') : null);
+  useEffect(() => {
+    if (linkExpired) setMsg(t('linkExpired'));
+  }, [linkExpired, t]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

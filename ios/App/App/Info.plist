@@ -64,6 +64,17 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.dreameducation.superconciencia.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>superconciencia</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Súper Conciencia usa el micrófono solo cuando eliges conversar con Gurú, tu guía de meditación. / The microphone is used only when you choose to talk with Guru, your meditation guide.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>

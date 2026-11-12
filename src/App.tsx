@@ -10,6 +10,7 @@ import { isPortalUnlocked, setPortalState } from './lib/portal';
 import { getCurrentUser, onAuthChange, signOut, hasBackend, type AppUser } from './lib/auth';
 import { loadProgress, saveLevel } from './lib/progress';
 import { unlockAmbient } from './lib/ambient';
+import { listenForAuthLinks } from './lib/authLinks';
 
 export type Screen = 'onboarding' | 'auth' | 'universe' | 'meditation' | 'portal' | 'profile';
 
@@ -19,6 +20,7 @@ export default function App() {
   const [user, setUser] = useState<AppUser | null>(null);
   const [completed, setCompleted] = useState<number[]>([]);
   const [hasInvite] = useState(false);
+  const [authNotice, setAuthNotice] = useState(false);
 
   const unlocked = isPortalUnlocked(completed, hasInvite);
   const inAether = screen === 'portal' && unlocked;
@@ -30,6 +32,17 @@ export default function App() {
     getCurrentUser().then(setUser);
     return onAuthChange(setUser);
   }, []);
+
+  // Enlaces del correo (confirmar cuenta): abren la app y dejan a la persona dentro.
+  useEffect(() => listenForAuthLinks((result) => {
+    if (result === 'signed-in') {
+      setAuthNotice(false);
+      setScreen('universe');
+    } else {
+      setAuthNotice(true);
+      setScreen('auth');
+    }
+  }), []);
 
   // Carga el progreso (nube si hay sesión, si no local).
   useEffect(() => {
@@ -77,7 +90,11 @@ export default function App() {
       >
         {screen === 'onboarding' && <Onboarding onBegin={begin} />}
         {screen === 'auth' && (
-          <Auth onAuthed={() => setScreen('universe')} onGuest={() => setScreen('universe')} />
+          <Auth
+            linkExpired={authNotice}
+            onAuthed={() => { setAuthNotice(false); setScreen('universe'); }}
+            onGuest={() => { setAuthNotice(false); setScreen('universe'); }}
+          />
         )}
         {screen === 'universe' && (
           <Universe

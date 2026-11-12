@@ -22,6 +22,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Enlaces del correo de Supabase (confirmar cuenta): superconciencia://auth abre la app. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="superconciencia" android:host="auth" />
+            </intent-filter>
+
         </activity>
 
         <provider

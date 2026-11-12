@@ -1,4 +1,5 @@
 import { supabase, hasBackend } from './supabase';
+import { authRedirectUrl } from './authLinks';
 
 export type AppUser = { id: string; email: string | null };
 
@@ -22,7 +23,13 @@ export async function signInWithPassword(email: string, password: string): Promi
 
 export async function signUpWithPassword(email: string, password: string): Promise<{ error: string | null }> {
   if (!supabase) return { error: 'no-backend' };
-  const { error } = await supabase.auth.signUp({ email, password });
+  // Sin esto, el enlace de "confirma tu correo" manda a la Site URL del proyecto
+  // (por defecto localhost) y en el teléfono termina en una página de error.
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { emailRedirectTo: authRedirectUrl() },
+  });
   return { error: error?.message ?? null };
 }
 
