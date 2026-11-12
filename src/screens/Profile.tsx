@@ -1,17 +1,32 @@
 import { useLang } from '../i18n/LanguageContext';
 import { LEVELS } from '../data/levels';
-import type { AppUser } from '../lib/auth';
+import { useState } from 'react';
+import { deleteMyAccount, type AppUser } from '../lib/auth';
+
+const PRIVACY_URL = 'https://dreameducationus.com/super-conciencia-privacidad/';
 
 type Props = {
   completed: number[];
   unlocked: boolean;
   user: AppUser | null;
   onSignOut: () => void;
+  onDeleted: () => void;
   onBack: () => void;
 };
 
-export default function Profile({ completed, unlocked, user, onSignOut, onBack }: Props) {
+export default function Profile({ completed, unlocked, user, onSignOut, onDeleted, onBack }: Props) {
   const { lang, setLang, t } = useLang();
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const doDelete = async () => {
+    setBusy(true); setErr(null);
+    const { error } = await deleteMyAccount();
+    setBusy(false);
+    if (error) { setErr(t('deleteError')); return; }
+    onDeleted();
+  };
 
   return (
     <div style={wrap}>
@@ -59,9 +74,32 @@ export default function Profile({ completed, unlocked, user, onSignOut, onBack }
           </button>
         )}
       </div>
+
+      {user && (
+        <section style={{ marginTop: 26, width: '100%', maxWidth: 420, textAlign: 'center' }}>
+          {!confirming ? (
+            <button onClick={() => setConfirming(true)} style={dangerLink}>{t('deleteAccount')}</button>
+          ) : (
+            <div className="sc-panel" style={{ padding: 16 }}>
+              <p style={{ fontSize: 12.5, lineHeight: 1.5, marginTop: 0 }}>{t('deleteConfirm')}</p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button className="sc-btn" style={{ padding: '8px 16px' }} disabled={busy} onClick={() => setConfirming(false)}>{t('deleteCancel')}</button>
+                <button className="sc-btn" style={{ padding: '8px 16px', background: 'rgba(140,30,60,0.55)' }} disabled={busy} onClick={doDelete}>{busy ? '…' : t('deleteYes')}</button>
+              </div>
+              {err && <p style={{ fontSize: 12, color: '#ffb3c1' }}>{err}</p>}
+            </div>
+          )}
+        </section>
+      )}
+
+      <a href={PRIVACY_URL} target="_blank" rel="noreferrer" style={{ marginTop: 18, fontSize: 11.5, color: 'var(--ink)', opacity: 0.6 }}>{t('privacy')}</a>
     </div>
   );
 }
+
+const dangerLink: React.CSSProperties = {
+  background: 'none', border: 'none', color: '#ffb3c1', fontSize: 12.5, textDecoration: 'underline', opacity: 0.85,
+};
 
 const wrap: React.CSSProperties = {
   height: '100%',

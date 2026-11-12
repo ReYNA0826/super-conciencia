@@ -96,6 +96,7 @@ export default function App() {
             unlocked={unlocked}
             user={user}
             onSignOut={doSignOut}
+            onDeleted={() => { setUser(null); setCompleted([]); setScreen('onboarding'); }}
             onBack={() => setScreen('universe')}
           />
         )}

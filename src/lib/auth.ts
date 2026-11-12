@@ -39,3 +39,17 @@ export function onAuthChange(cb: (user: AppUser | null) => void): () => void {
   });
   return () => data.subscription.unsubscribe();
 }
+
+/**
+ * Elimina de forma permanente la cuenta del usuario actual (exigido por Apple, guía 5.1.1(v)).
+ * Llama a la función segura public.delete_my_account(), que solo puede borrar al propio usuario;
+ * su progreso y perfil se borran en cascada. Luego cierra la sesión local.
+ */
+export async function deleteMyAccount(): Promise<{ error: string | null }> {
+  if (!supabase) return { error: 'no-backend' };
+  const { error } = await supabase.rpc('delete_my_account');
+  if (error) return { error: error.message };
+  await supabase.auth.signOut();
+  try { localStorage.removeItem('sc-completed'); } catch { /* ignore */ }
+  return { error: null };
+}
