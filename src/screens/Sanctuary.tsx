@@ -152,6 +152,8 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
 
   return (
     <div style={stage}>
+      {/* Siempre a la vista: salir del santuario y volver a la lista de niveles. */}
+      <button style={homeBtn} onClick={onBack} aria-label={t('home')}>← {t('home')}</button>
       {step === 'entry' && (
         <Panel>
           <h2 style={title}>{t('sanctuaryName')}</h2>
@@ -316,4 +318,19 @@ const orb: React.CSSProperties = {
   width: 64, height: 64, borderRadius: '50%',
   background: 'radial-gradient(circle at 50% 40%, #ffffff 0%, #bfeaf4 35%, #9a6ff0 100%)',
   boxShadow: '0 0 40px 6px rgba(191, 234, 244, 0.45)',
+};
+
+const homeBtn: React.CSSProperties = {
+  pointerEvents: 'auto', // el escenario deja pasar los toques; este botón sí los recibe
+  position: 'fixed',
+  top: 'calc(var(--safe-top) + 16px)',
+  left: 16,
+  zIndex: 5,
+  padding: '9px 16px',
+  borderRadius: 999,
+  border: '1px solid var(--panel-border)',
+  background: 'rgba(18,12,51,0.6)',
+  color: 'var(--gold)',
+  fontSize: 14,
+  letterSpacing: '0.04em',
 };
