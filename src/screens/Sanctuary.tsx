@@ -1,0 +1,291 @@
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useLang } from '../i18n/LanguageContext';
+import type { StringKey } from '../i18n/strings';
+import { setSanctuaryState } from '../lib/sceneBridge';
+import { buildSanctuarySession } from '../data/sanctuary';
+import { guruConfigured, startGuru, type GuruSession, type GuruStatus } from '../lib/guru';
+import {
+  DURATIONS, GOALS, MUSICS, VOICES,
+  loadSanctuaryPrefs, saveSanctuaryPrefs,
+  type GoalChoice, type MusicChoice, type SanctuaryPrefs, type VoiceChoice,
+} from '../lib/prefs';
+
+/**
+ * Santuario del Éter (nivel 7). La sala 3D es la protagonista; la interfaz son
+ * paneles de cristal abajo, y durante la práctica casi desaparece.
+ *
+ *   entrada → preparar → meditando → cierre
+ *           ↘ aviso de voz → conversando con Gurú → cierre
+ */
+type Step = 'entry' | 'setup' | 'meditating' | 'consent' | 'guru' | 'closing';
+
+type Props = { onBack: () => void; onComplete: () => void };
+
+const VOICE_LABEL: Record<VoiceChoice, StringKey> = { female: 'voiceFemale', male: 'voiceMale' };
+const MUSIC_LABEL: Record<MusicChoice, StringKey> = {
+  nature: 'musicNature', ethereal: 'musicEthereal', piano: 'musicPiano', silence: 'musicSilence',
+};
+const GOAL_LABEL: Record<GoalChoice, StringKey> = {
+  calm: 'goalCalm', focus: 'goalFocus', rest: 'goalRest', connection: 'goalConnection',
+};
+const GURU_LABEL: Partial<Record<GuruStatus, StringKey>> = {
+  connecting: 'guruConnecting', listening: 'guruListening', speaking: 'guruSpeaking', error: 'guruError',
+};
+
+export default function Sanctuary({ onBack, onComplete }: Props) {
+  const { lang, t } = useLang();
+  const [step, setStep] = useState<Step>('entry');
+  const [prefs, setPrefs] = useState<SanctuaryPrefs>(loadSanctuaryPrefs);
+  const [elapsed, setElapsed] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  const [guruStatus, setGuruStatus] = useState<GuruStatus | null>(null);
+  const [guruNote, setGuruNote] = useState(false);
+  const guru = useRef<GuruSession | null>(null);
+  const guruRun = useRef(0);
+
+  const update = (patch: Partial<SanctuaryPrefs>) => {
+    const next = { ...prefs, ...patch };
+    setPrefs(next);
+    saveSanctuaryPrefs(next);
+  };
+
+  // ── Meditación ────────────────────────────────────────────────────────────
+  const phases = useMemo(() => buildSanctuarySession(prefs.minutes, prefs.goal), [prefs.minutes, prefs.goal]);
+  const total = prefs.minutes * 60;
+  const idx = useMemo(() => {
+    let acc = 0;
+    for (let i = 0; i < phases.length; i++) {
+      acc += phases[i].seconds;
+      if (elapsed < acc) return i;
+    }
+    return phases.length - 1;
+  }, [phases, elapsed]);
+
+  useEffect(() => {
+    if (step !== 'meditating' || !playing) return;
+    const id = window.setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [step, playing]);
+
+  useEffect(() => {
+    if (step === 'meditating' && elapsed >= total) {
+      setStep('closing');
+      onComplete();
+    }
+  }, [step, elapsed, total, onComplete]);
+
+  const beginMeditation = () => {
+    setElapsed(0);
+    setPlaying(true);
+    setStep('meditating');
+  };
+
+  // ── La sala acompaña: Meditando en la práctica, Cierre al final, Reposo en lo demás ──
+  const lastPhase = idx === phases.length - 1;
+  useEffect(() => {
+    if (step === 'meditating') setSanctuaryState(lastPhase ? 'closing' : 'meditating');
+    else if (step === 'closing') setSanctuaryState('closing');
+    else setSanctuaryState('resting');
+  }, [step, lastPhase]);
+  useEffect(() => () => setSanctuaryState('resting'), []);
+
+  // ── Gurú ──────────────────────────────────────────────────────────────────
+  const stopGuru = () => {
+    guruRun.current += 1; // invalida cualquier conexión que siga en camino
+    const session = guru.current;
+    guru.current = null;
+    if (session) void session.end().catch(() => undefined);
+  };
+  useEffect(() => stopGuru, []);
+
+  const activateVoice = async () => {
+    if (!guruConfigured) { setGuruNote(true); return; }
+    const run = ++guruRun.current;
+    setStep('guru');
+    try {
+      const session = await startGuru(prefs.voice, (status) => {
+        if (guruRun.current !== run) return;
+        if (status === 'ended') { guru.current = null; setStep('closing'); return; }
+        setGuruStatus(status);
+      });
+      if (guruRun.current !== run) { void session.end().catch(() => undefined); return; }
+      guru.current = session;
+    } catch {
+      if (guruRun.current === run) setGuruStatus('error');
+    }
+  };
+
+  const endConversation = () => {
+    const wasError = guruStatus === 'error';
+    stopGuru();
+    setGuruStatus(null);
+    setStep(wasError ? 'entry' : 'closing');
+  };
+
+  const remaining = Math.max(0, total - elapsed);
+  const clock = `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}`;
+
+  return (
+    <div style={stage}>
+      {step === 'entry' && (
+        <Panel>
+          <h2 style={title}>{t('sanctuaryName')}</h2>
+          <p style={lead}>{t('sanctuaryWelcome')}</p>
+          <p style={body}>{t('sanctuaryIntro')}</p>
+          <div style={stack}>
+            <button className="sc-btn" onClick={() => setStep('setup')}>{t('enterMeditation')}</button>
+            <button className="sc-btn" onClick={() => { setGuruNote(false); setStep('consent'); }}>{t('talkToGuru')}</button>
+          </div>
+          <button style={quiet} onClick={onBack}>{t('back')}</button>
+        </Panel>
+      )}
+
+      {step === 'setup' && (
+        <Panel>
+          <h2 style={title}>{t('enterMeditation')}</h2>
+          <Row label={t('duration')}>
+            {DURATIONS.map((m) => (
+              <Chip key={m} on={prefs.minutes === m} onClick={() => update({ minutes: m })}>{m} min</Chip>
+            ))}
+          </Row>
+          <Row label={t('voice')}>
+            {VOICES.map((v) => (
+              <Chip key={v} on={prefs.voice === v} onClick={() => update({ voice: v })}>{t(VOICE_LABEL[v])}</Chip>
+            ))}
+          </Row>
+          <Row label={t('music')}>
+            {MUSICS.map((m) => (
+              <Chip key={m} on={prefs.music === m} onClick={() => update({ music: m })}>{t(MUSIC_LABEL[m])}</Chip>
+            ))}
+          </Row>
+          <Row label={t('goal')}>
+            {GOALS.map((g) => (
+              <Chip key={g} on={prefs.goal === g} onClick={() => update({ goal: g })}>{t(GOAL_LABEL[g])}</Chip>
+            ))}
+          </Row>
+          <button className="sc-btn" style={{ marginTop: 18 }} onClick={beginMeditation}>{t('beginMeditation')}</button>
+          <span style={note}>{t('soundSoon')}</span>
+          <button style={quiet} onClick={() => setStep('entry')}>{t('back')}</button>
+        </Panel>
+      )}
+
+      {step === 'meditating' && (
+        <Panel soft>
+          <p style={phaseText}>{lang === 'es' ? phases[idx]?.es : phases[idx]?.en}</p>
+          <div style={{ display: 'flex', gap: 7, justifyContent: 'center', marginTop: 14 }}>
+            {phases.map((_, i) => (
+              <span key={i} style={{ ...dot, background: i <= idx ? 'var(--gold)' : 'rgba(255,255,255,0.22)' }} />
+            ))}
+          </div>
+          <span style={{ ...note, marginTop: 10 }}>{clock}</span>
+          <div style={{ display: 'flex', gap: 18, justifyContent: 'center', alignItems: 'center', marginTop: 10 }}>
+            <button className="sc-btn" style={{ padding: '9px 22px', fontSize: 13 }} onClick={() => setPlaying((p) => !p)}>
+              {playing ? t('pause') : t('play')}
+            </button>
+            <button style={{ ...quiet, marginTop: 0 }} onClick={() => setStep('closing')}>{t('leaveGently')}</button>
+          </div>
+        </Panel>
+      )}
+
+      {step === 'consent' && (
+        <Panel>
+          <h2 style={title}>{t('talkToGuru')}</h2>
+          <p style={lead}>{t('guruGreeting')}</p>
+          <p style={body}>{t('guruConsent')}</p>
+          <div style={stack}>
+            <button className="sc-btn" onClick={activateVoice}>{t('activateVoice')}</button>
+          </div>
+          {guruNote && <span style={note}>{t('guruNotReady')}</span>}
+          <button style={quiet} onClick={() => setStep('entry')}>{t('notNow')}</button>
+        </Panel>
+      )}
+
+      {step === 'guru' && (
+        <Panel soft>
+          <div className="sc-guru-orb" data-speaking={guruStatus === 'speaking'} style={orb} aria-hidden />
+          <p style={{ ...lead, marginTop: 14 }} role="status">
+            {t(GURU_LABEL[guruStatus ?? 'connecting'] ?? 'guruConnecting')}
+          </p>
+          <button className="sc-btn" style={{ padding: '9px 22px', fontSize: 13, marginTop: 6 }} onClick={endConversation}>
+            {guruStatus === 'error' ? t('back') : t('endConversation')}
+          </button>
+        </Panel>
+      )}
+
+      {step === 'closing' && (
+        <Panel>
+          <p style={lead}>{t('sanctuaryClosing')}</p>
+          <div style={stack}>
+            <button className="sc-btn" onClick={() => setStep('entry')}>{t('sanctuaryName')}</button>
+          </div>
+          <button style={quiet} onClick={onBack}>{t('back')}</button>
+        </Panel>
+      )}
+    </div>
+  );
+}
+
+function Panel({ children, soft = false }: { children: ReactNode; soft?: boolean }) {
+  return (
+    <div className="sc-panel sc-rise" style={{ ...panel, background: soft ? 'rgba(18, 12, 51, 0.38)' : 'rgba(18, 12, 51, 0.62)' }}>
+      {children}
+    </div>
+  );
+}
+
+function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div style={{ width: '100%', marginTop: 12 }}>
+      <div style={rowLabel}>{label}</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, justifyContent: 'center' }}>{children}</div>
+    </div>
+  );
+}
+
+function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button type="button" className="sc-chip" aria-pressed={on} onClick={onClick}>{children}</button>
+  );
+}
+
+// La escena queda libre para tocarse; solo los paneles reciben toques.
+const stage: React.CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+  padding: 'calc(var(--safe-top) + 16px) 16px calc(var(--safe-bottom) + 18px)',
+  pointerEvents: 'none',
+};
+const panel: React.CSSProperties = {
+  pointerEvents: 'auto',
+  width: '100%',
+  maxWidth: 420,
+  maxHeight: '78%',
+  overflowY: 'auto',
+  padding: '20px 20px 16px',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  textAlign: 'center',
+  boxShadow: '0 0 40px rgba(154, 111, 240, 0.25)',
+};
+const title: React.CSSProperties = { color: 'var(--gold)', fontSize: 17, letterSpacing: '0.14em', margin: 0, textTransform: 'uppercase' };
+const lead: React.CSSProperties = { fontSize: 14.5, lineHeight: 1.6, margin: '12px 0 0', whiteSpace: 'pre-line' };
+const body: React.CSSProperties = { fontSize: 12.5, lineHeight: 1.6, opacity: 0.8, margin: '8px 0 0' };
+const stack: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18, width: '100%', maxWidth: 280 };
+const quiet: React.CSSProperties = {
+  background: 'none', border: 'none', color: 'var(--ink)', opacity: 0.7, fontSize: 12.5,
+  letterSpacing: '0.08em', marginTop: 14, padding: '6px 10px',
+};
+const note: React.CSSProperties = { display: 'block', fontSize: 10.5, letterSpacing: '0.08em', opacity: 0.6, marginTop: 10 };
+const rowLabel: React.CSSProperties = { fontSize: 10.5, letterSpacing: '0.16em', textTransform: 'uppercase', opacity: 0.65, marginBottom: 7 };
+const phaseText: React.CSSProperties = { fontSize: 17, lineHeight: 1.6, margin: 0, minHeight: 54 };
+const dot: React.CSSProperties = { width: 7, height: 7, borderRadius: '50%', transition: 'background .6s ease' };
+const orb: React.CSSProperties = {
+  width: 64, height: 64, borderRadius: '50%',
+  background: 'radial-gradient(circle at 50% 40%, #ffffff 0%, #bfeaf4 35%, #9a6ff0 100%)',
+  boxShadow: '0 0 40px 6px rgba(191, 234, 244, 0.45)',
+};

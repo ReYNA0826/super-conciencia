@@ -1,18 +1,13 @@
 import { useLang } from '../i18n/LanguageContext';
+import Sanctuary from './Sanctuary';
 
-export default function Portal({ unlocked, onBack }: { unlocked: boolean; onBack: () => void }) {
+type Props = { unlocked: boolean; onBack: () => void; onComplete: () => void };
+
+export default function Portal({ unlocked, onBack, onComplete }: Props) {
   const { t } = useLang();
 
-  // Dentro del Reino del Éter la sala es la protagonista: solo un botón discreto para volver.
-  if (unlocked) {
-    return (
-      <div style={openBar}>
-        <button className="sc-btn" style={{ padding: '10px 22px', fontSize: 13, pointerEvents: 'auto' }} onClick={onBack}>
-          {t('back')}
-        </button>
-      </div>
-    );
-  }
+  // Portal abierto: el Santuario del Éter (entrada, meditación, conversación con Gurú).
+  if (unlocked) return <Sanctuary onBack={onBack} onComplete={onComplete} />;
 
   return (
     <div style={wrap}>
@@ -40,14 +35,4 @@ const wrap: React.CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   padding: '0 24px',
-};
-
-const openBar: React.CSSProperties = {
-  position: 'absolute',
-  left: 0,
-  right: 0,
-  bottom: 'calc(var(--safe-bottom) + 20px)',
-  display: 'flex',
-  justifyContent: 'center',
-  pointerEvents: 'none',
 };

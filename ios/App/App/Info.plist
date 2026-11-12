@@ -64,6 +64,8 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Súper Conciencia usa el micrófono solo cuando eliges conversar con Gurú, tu guía de meditación. / The microphone is used only when you choose to talk with Guru, your meditation guide.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 </dict>

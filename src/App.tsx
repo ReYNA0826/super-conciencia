@@ -89,7 +89,9 @@ export default function App() {
         {screen === 'meditation' && (
           <Meditation level={selectedLevel} onClose={() => setScreen('universe')} onComplete={completeLevel} />
         )}
-        {screen === 'portal' && <Portal unlocked={unlocked} onBack={() => setScreen('universe')} />}
+        {screen === 'portal' && (
+          <Portal unlocked={unlocked} onBack={() => setScreen('universe')} onComplete={() => completeLevel(7)} />
+        )}
         {screen === 'profile' && (
           <Profile
             completed={completed}

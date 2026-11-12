@@ -38,4 +38,9 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Micrófono: solo para conversar con Gurú, y solo cuando el usuario lo activa. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- La app sigue disponible en dispositivos sin micrófono (meditación sin Gurú). -->
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 </manifest>

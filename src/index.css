@@ -106,7 +106,35 @@ button {
  */
 #panel, #sc-eter-header { display: none !important; }
 /* El HTML de la escena define estilos globales para <button>; los neutralizamos en los nuestros. */
-.sc-btn { flex: none; min-height: 0; }
+.sc-btn, .sc-chip { flex: none; min-height: 0; }
+
+/* Opciones del santuario (duración, voz, música, objetivo): pastillas de cristal. */
+.sc-chip {
+  border: 1px solid rgba(246, 227, 168, 0.28);
+  background: rgba(18, 12, 51, 0.35);
+  color: var(--ink);
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+.sc-chip[aria-pressed='true'] {
+  background: rgba(80, 50, 150, 0.75);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* Paneles del santuario: entran con suavidad. */
+@keyframes scRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.sc-rise { animation: scRise 0.7s ease both; }
+/* Presencia de Gurú mientras conversa. */
+@keyframes scPulse { 0%,100% { transform: scale(0.92); opacity: .75; } 50% { transform: scale(1.08); opacity: 1; } }
+.sc-guru-orb { animation: scPulse 5s ease-in-out infinite; }
+.sc-guru-orb[data-speaking='true'] { animation-duration: 1.8s; }
+@media (prefers-reduced-motion: reduce) {
+  .sc-rise, .sc-guru-orb { animation: none; }
+}
 
 /* Fondos pintados de los mundos: deriva lenta y luz que respira (8 s, sin marcar ritmo). */
 @keyframes scWorldDrift { from { transform: scale(1); } to { transform: scale(1.06); } }
