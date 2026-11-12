@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLang } from '../i18n/LanguageContext';
 import { LEVELS } from '../data/levels';
 import { MEDITATIONS } from '../data/meditations';
+import { setSanctuaryState } from '../lib/sceneBridge';
 
 type Props = {
   level: number;
@@ -32,6 +33,14 @@ export default function Meditation({ level, onClose, onComplete }: Props) {
     }, ms);
     return () => { if (timer.current) window.clearTimeout(timer.current); };
   }, [idx, playing, done, phases, level, onComplete]);
+
+  // La sala acompaña la sesión: Meditando durante la práctica, Cierre en la última fase
+  // o al terminar, y Reposo al salir.
+  const isLast = phases.length > 0 && idx === phases.length - 1;
+  useEffect(() => {
+    setSanctuaryState(done || isLast ? 'closing' : 'meditating');
+  }, [done, isLast]);
+  useEffect(() => () => setSanctuaryState('resting'), []);
 
   const phase = phases[idx];
   const accent = info?.color ?? '#9a6ff0';

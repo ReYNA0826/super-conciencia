@@ -20,7 +20,8 @@ export default function App() {
   const [hasInvite] = useState(false);
 
   const unlocked = isPortalUnlocked(completed, hasInvite);
-  const dimScene = screen === 'meditation' || screen === 'profile' || screen === 'portal';
+  const inAether = screen === 'portal' && unlocked;
+  const dimScene = screen === 'meditation' || screen === 'profile' || (screen === 'portal' && !unlocked);
 
   // Sesión de Supabase (si hay backend configurado).
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function App() {
 
   return (
     <>
-      <SplineStage />
+      <SplineStage aether={inAether} />
       <main
         style={{
           position: 'relative',

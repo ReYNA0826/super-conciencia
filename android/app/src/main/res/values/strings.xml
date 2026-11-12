@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Súper Conciencia</string>
+    <string name="title_activity_main">Súper Conciencia</string>
+    <string name="package_name">com.dreameducation.superconciencia</string>
+    <string name="custom_url_scheme">com.dreameducation.superconciencia</string>
+</resources>

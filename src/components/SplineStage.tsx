@@ -1,15 +1,19 @@
 import { Suspense, lazy } from 'react';
+import { markSceneReady } from '../lib/sceneBridge';
 
 // @splinetool/react-spline se carga de forma diferida (es pesado).
 const Spline = lazy(() => import('@splinetool/react-spline'));
 
-const SCENE_URL = import.meta.env.VITE_SPLINE_SCENE_URL as string | undefined;
+const UNIVERSE_URL = import.meta.env.VITE_SPLINE_SCENE_URL as string | undefined;
+const AETHER_URL = import.meta.env.VITE_SPLINE_AETHER_URL as string | undefined;
 
 /**
  * Fondo 3D persistente: la escena de SÚPER CONCIENCIA publicada en Spline.
  * Mientras no haya URL configurada, muestra un degradado cósmico de respaldo.
  */
-export default function SplineStage() {
+export default function SplineStage({ aether = false }: { aether?: boolean }) {
+  // Universo (planetas) en casi toda la app; la sala del Éter solo al entrar al nivel 7.
+  const SCENE_URL = aether ? AETHER_URL ?? UNIVERSE_URL : UNIVERSE_URL;
   if (!SCENE_URL) {
     return (
       <div
@@ -43,7 +47,7 @@ export default function SplineStage() {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 0 }} aria-hidden>
       <Suspense fallback={null}>
-        <Spline scene={SCENE_URL} />
+        <Spline key={SCENE_URL} scene={SCENE_URL} onLoad={() => markSceneReady()} />
       </Suspense>
     </div>
   );

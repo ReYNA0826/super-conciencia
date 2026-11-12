@@ -98,3 +98,12 @@ button {
   color: var(--gold);
   opacity: 1;
 }
+
+/*
+ * La sala del Éter trae su propio HTML (título + panel de botones de prueba) que el
+ * runtime de Spline inserta en la página. En la app lo ocultamos: la interfaz es nuestra.
+ * Sus funciones (window.SuperConciencia) siguen activas.
+ */
+#panel, #sc-eter-header { display: none !important; }
+/* El HTML de la escena define estilos globales para <button>; los neutralizamos en los nuestros. */
+.sc-btn { flex: none; min-height: 0; }

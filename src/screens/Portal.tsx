@@ -3,6 +3,17 @@ import { useLang } from '../i18n/LanguageContext';
 export default function Portal({ unlocked, onBack }: { unlocked: boolean; onBack: () => void }) {
   const { t } = useLang();
 
+  // Dentro del Reino del Éter la sala es la protagonista: solo un botón discreto para volver.
+  if (unlocked) {
+    return (
+      <div style={openBar}>
+        <button className="sc-btn" style={{ padding: '10px 22px', fontSize: 13, pointerEvents: 'auto' }} onClick={onBack}>
+          {t('back')}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div style={wrap}>
       <div className="sc-panel" style={{ padding: 28, maxWidth: 360, textAlign: 'center' }}>
@@ -29,4 +40,14 @@ const wrap: React.CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   padding: '0 24px',
+};
+
+const openBar: React.CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  right: 0,
+  bottom: 'calc(var(--safe-bottom) + 20px)',
+  display: 'flex',
+  justifyContent: 'center',
+  pointerEvents: 'none',
 };
