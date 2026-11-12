@@ -5,7 +5,12 @@ import WorldBackdrop, { PORTAL_IMAGE } from './WorldBackdrop';
 // @splinetool/react-spline se carga de forma diferida (es pesado).
 const Spline = lazy(() => import('@splinetool/react-spline'));
 
-const UNIVERSE_URL = import.meta.env.VITE_SPLINE_SCENE_URL as string | undefined;
+// Escena pública "Celestial Portal Meditation" (los planetas de la pantalla de inicio).
+// Va escrita aquí para que cualquier computadora que compile la app la incluya, aunque
+// su .env.local no la tenga. .env.local puede reemplazarla si hace falta.
+const DEFAULT_UNIVERSE_URL = 'https://prod.spline.design/NVlY2U0QYcSIYFEF/scene.splinecode';
+const UNIVERSE_URL =
+  (import.meta.env.VITE_SPLINE_SCENE_URL as string | undefined) || DEFAULT_UNIVERSE_URL;
 const AETHER_URL = import.meta.env.VITE_SPLINE_AETHER_URL as string | undefined;
 
 /**

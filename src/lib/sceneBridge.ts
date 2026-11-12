@@ -47,6 +47,17 @@ function api(): SuperConcienciaApi | undefined {
   return typeof window === 'undefined' ? undefined : window.SuperConciencia;
 }
 
+/**
+ * Llama a la escena sin arriesgar la app: si la escena ya se cerró (por ejemplo al
+ * salir del nivel 7) una llamada puede fallar, y eso no debe dejar la pantalla en negro.
+ */
+function safe(call: () => void): boolean {
+  try { call(); return true; } catch (err) {
+    console.warn('[sceneBridge] la escena no respondió', err);
+    return false;
+  }
+}
+
 function post(type: string, value: unknown) {
   if (typeof window === 'undefined') return;
   // por si la escena vive en un iframe
@@ -55,31 +66,31 @@ function post(type: string, value: unknown) {
 
 function applyPortal(state: PortalState): boolean {
   const sc = api();
-  if (state === 'unlocked' && sc?.openPortal) { sc.openPortal(); return true; }
-  if (state === 'locked' && sc?.lockPortal) { sc.lockPortal(); return true; }
+  if (state === 'unlocked' && sc?.openPortal) return safe(() => sc.openPortal!());
+  if (state === 'locked' && sc?.lockPortal) return safe(() => sc.lockPortal!());
   const legacy = typeof window === 'undefined' ? undefined : window.AetherPortal;
-  if (legacy?.setState) { legacy.setState(state); return true; }
+  if (legacy?.setState) return safe(() => legacy.setState!(state));
   post('aether-portal-state', state);
   return false;
 }
 
 function applyParticipants(n: number): boolean {
   const sc = api();
-  if (sc?.setParticipants) { sc.setParticipants(n); return true; }
+  if (sc?.setParticipants) return safe(() => sc.setParticipants!(n));
   post('aether-participants', n);
   return false;
 }
 
 function applyState(s: SanctuaryState): boolean {
   const sc = api();
-  if (sc?.setState) { sc.setState(s); return true; }
+  if (sc?.setState) return safe(() => sc.setState!(s));
   post('aether-state', s);
   return false;
 }
 
 function applyReducedMotion(on: boolean): boolean {
   const sc = api();
-  if (sc?.setReducedMotion) { sc.setReducedMotion(on); return true; }
+  if (sc?.setReducedMotion) return safe(() => sc.setReducedMotion!(on));
   post('aether-reduced-motion', on);
   return false;
 }

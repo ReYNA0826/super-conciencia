@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import SplineStage from './components/SplineStage';
+import SceneGuard from './components/SceneGuard';
+import WorldBackdrop, { PORTAL_IMAGE } from './components/WorldBackdrop';
 import Onboarding from './screens/Onboarding';
 import Auth from './screens/Auth';
 import Universe from './screens/Universe';
@@ -85,7 +87,17 @@ export default function App() {
 
   return (
     <>
-      <SplineStage aether={inAether} />
+      {/* key: al entrar o salir del Éter la protección empieza de cero */}
+      <SceneGuard
+        key={inAether ? 'aether' : 'universe'}
+        fallback={
+          <div style={{ position: 'fixed', inset: 0, zIndex: 0 }} aria-hidden>
+            <WorldBackdrop src={PORTAL_IMAGE} breathe={false} />
+          </div>
+        }
+      >
+        <SplineStage aether={inAether} />
+      </SceneGuard>
       <main
         style={{
           position: 'relative',
