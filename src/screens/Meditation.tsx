@@ -5,6 +5,7 @@ import { MEDITATIONS } from '../data/meditations';
 import { setSanctuaryState } from '../lib/sceneBridge';
 import { pauseAmbient, resumeAmbient, startAmbient, stopAmbient } from '../lib/ambient';
 import { loadSanctuaryPrefs } from '../lib/prefs';
+import { pauseVoice, playVoice, resumeVoice, stopVoice } from '../lib/voice';
 import WorldBackdrop, { WORLD_IMAGE } from '../components/WorldBackdrop';
 
 type Props = {
@@ -23,10 +24,16 @@ export default function Meditation({ level, onClose, onComplete }: Props) {
   const [done, setDone] = useState(false);
   const timer = useRef<number | null>(null);
 
+  // Tiempo de cada fase. Al pausar se guarda lo que faltaba, para continuar donde quedó.
+  const remaining = useRef<number | null>(null);
   useEffect(() => {
     if (!playing || done || phases.length === 0) return;
-    const ms = (phases[idx]?.seconds ?? 20) * 1000;
+    const ms = remaining.current ?? (phases[idx]?.seconds ?? 20) * 1000;
+    const startedAt = Date.now();
+    let fired = false;
     timer.current = window.setTimeout(() => {
+      fired = true;
+      remaining.current = null;
       if (idx < phases.length - 1) {
         setIdx((i) => i + 1);
       } else {
@@ -34,8 +41,19 @@ export default function Meditation({ level, onClose, onComplete }: Props) {
         onComplete(level);
       }
     }, ms);
-    return () => { if (timer.current) window.clearTimeout(timer.current); };
+    return () => {
+      if (timer.current) window.clearTimeout(timer.current);
+      if (!fired) remaining.current = Math.max(0, ms - (Date.now() - startedAt));
+    };
   }, [idx, playing, done, phases, level, onComplete]);
+
+  // Voz guía grabada: suena al empezar cada fase (por ahora solo en español).
+  const voiceUrl = lang === 'es' ? phases[idx]?.audioEs : undefined;
+  useEffect(() => {
+    if (done || !voiceUrl) return;
+    playVoice(voiceUrl);
+    return () => stopVoice();
+  }, [voiceUrl, done]);
 
   // La sala acompaña la sesión: Meditando durante la práctica, Cierre en la última fase
   // o al terminar, y Reposo al salir.
@@ -55,7 +73,7 @@ export default function Meditation({ level, onClose, onComplete }: Props) {
     if (done) stopAmbient(6);
   }, [done]);
   const togglePlaying = () => {
-    if (playing) pauseAmbient(); else resumeAmbient();
+    if (playing) { pauseAmbient(); pauseVoice(); } else { resumeAmbient(); resumeVoice(); }
     setPlaying(!playing);
   };
 
@@ -109,7 +127,7 @@ export default function Meditation({ level, onClose, onComplete }: Props) {
         )}
       </div>
 
-      <span style={voiceNote}>{t('voiceSoon')}</span>
+      {!voiceUrl && <span style={voiceNote}>{t('voiceSoon')}</span>}
 
       <style>{`@keyframes scBreathe {
         0%,100% { transform: scale(0.9); opacity: .85; }

@@ -2,16 +2,28 @@
 // Cada fase se mostrará en pantalla y, más adelante, la narrará la voz de ElevenLabs.
 // El tono es calmado, ceremonial y en segunda persona (lenguaje neutro de género).
 
-export type MeditationPhase = { es: string; en: string; seconds: number };
+/** `audioEs`: voz grabada en español de esa fase (opcional). `seconds` ya incluye el silencio que la sigue. */
+export type MeditationPhase = { es: string; en: string; seconds: number; audioEs?: string };
 
 export const MEDITATIONS: Record<number, MeditationPhase[]> = {
-  // 1 · El Despertar — respiración, llegada, entrada al viaje
+  // 1 · El Despertar — 15 minutos con voz guía (guion completo en docs/guiones/nivel-1-el-despertar.md).
+  // seconds = duración de la voz (a ritmo lento) + el silencio que la sigue.
   1: [
-    { es: 'Cierra los ojos y deja que tu cuerpo se asiente.', en: 'Close your eyes and let your body settle.', seconds: 18 },
-    { es: 'Inhala lento por la nariz… siente el aire llenarte.', en: 'Breathe in slowly through your nose… feel the air fill you.', seconds: 22 },
-    { es: 'Exhala despacio… suelta todo lo que pesa.', en: 'Breathe out slowly… release all that weighs on you.', seconds: 22 },
-    { es: 'Sigue tu respiración como una ola que va y viene.', en: 'Follow your breath like a wave that comes and goes.', seconds: 24 },
-    { es: 'Estás aquí. Estás a salvo. Respira.', en: 'You are here. You are safe. Breathe.', seconds: 18 },
+    { es: 'Bienvenida. Hoy no tienes que resolverlo todo. Solo estar aquí.', en: "Welcome. You don't have to solve everything today. Just be here.", seconds: 43, audioEs: '/audio/voz/es/1/01.mp3' },
+    { es: 'Busca una postura cómoda. Ojos cerrados o abiertos, como prefieras.', en: 'Find a comfortable posture. Eyes closed or open, as you prefer.', seconds: 47, audioEs: '/audio/voz/es/1/02.mp3' },
+    { es: 'Reconoce el lugar donde estás. Te sostiene en este momento.', en: 'Notice the place where you are. It holds you in this moment.', seconds: 48, audioEs: '/audio/voz/es/1/03.mp3' },
+    { es: 'Recorre tu cuerpo con calma y suelta lo que ya no necesita ser sostenido.', en: 'Move calmly through your body and release what no longer needs holding.', seconds: 53, audioEs: '/audio/voz/es/1/04.mp3' },
+    { es: 'Observa tu respiración natural, sin cambiarla.', en: 'Observe your natural breath, without changing it.', seconds: 57, audioEs: '/audio/voz/es/1/05.mp3' },
+    { es: 'Deja que tu atención descanse donde sientes la respiración.', en: 'Let your attention rest where you feel the breath.', seconds: 62, audioEs: '/audio/voz/es/1/06.mp3' },
+    { es: 'Si te ayuda, cuenta tus respiraciones del uno al diez.', en: 'If it helps, count your breaths from one to ten.', seconds: 77, audioEs: '/audio/voz/es/1/07.mp3' },
+    { es: 'La mente se va. Darte cuenta y volver: eso es meditar.', en: 'The mind wanders. Noticing and returning: that is meditating.', seconds: 52, audioEs: '/audio/voz/es/1/08.mp3' },
+    { es: 'Cuando un pensamiento te lleve lejos, dite con amabilidad: «pensando».', en: 'When a thought carries you away, kindly tell yourself: “thinking.”', seconds: 78, audioEs: '/audio/voz/es/1/09.mp3' },
+    { es: 'Abre tu atención a todo el cuerpo.', en: 'Open your attention to the whole body.', seconds: 59, audioEs: '/audio/voz/es/1/10.mp3' },
+    { es: 'Imagina una esfera de luz azul que respira contigo.', en: 'Imagine a sphere of blue light breathing with you.', seconds: 61, audioEs: '/audio/voz/es/1/11.mp3' },
+    { es: 'Al entrar el aire: «estoy». Al salir: «aquí».', en: 'Breathing in: “I am.” Breathing out: “here.”', seconds: 86, audioEs: '/audio/voz/es/1/12.mp3' },
+    { es: 'Silencio. Si la mente se va, vuelve con una respiración.', en: 'Silence. If the mind wanders, return with one breath.', seconds: 106, audioEs: '/audio/voz/es/1/13.mp3' },
+    { es: 'Poco a poco, vuelve a sentir tu cuerpo y el lugar.', en: 'Little by little, feel your body and the room again.', seconds: 52, audioEs: '/audio/voz/es/1/14.mp3' },
+    { es: 'Abre los ojos cuando te sientas a gusto. Gracias por darte este tiempo.', en: 'Open your eyes when you feel ready. Thank you for giving yourself this time.', seconds: 39, audioEs: '/audio/voz/es/1/15.mp3' },
   ],
   // 2 · La Calma — quietud, silencio interior
   2: [

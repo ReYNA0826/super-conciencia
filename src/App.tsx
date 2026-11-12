@@ -12,6 +12,7 @@ import { isPortalUnlocked, setPortalState } from './lib/portal';
 import { getCurrentUser, onAuthChange, signOut, hasBackend, type AppUser } from './lib/auth';
 import { loadProgress, saveLevel } from './lib/progress';
 import { unlockAmbient } from './lib/ambient';
+import { unlockVoice } from './lib/voice';
 import { listenForAuthLinks } from './lib/authLinks';
 import { NO_INVITES, loadInviteState, type InviteState } from './lib/invitations';
 
@@ -73,6 +74,7 @@ export default function App() {
 
   const openLevel = (id: number) => {
     unlockAmbient(); // dentro del toque: permite que la música arranque en el teléfono
+    unlockVoice(); // y también la voz guía
     setSelectedLevel(id);
     setScreen('meditation');
   };
