@@ -25,3 +25,4 @@ yarn-debug.log*
 yarn-error.log*
 # typescript build cache
 *.tsbuildinfo
+.cap6-backup/
