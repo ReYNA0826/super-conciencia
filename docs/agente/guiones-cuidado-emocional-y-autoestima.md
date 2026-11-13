@@ -277,7 +277,7 @@ Puedes volver a tus actividades cuando quieras, con tiempo para acomodarte. Esta
 
 **Locución**
 
-Te doy la bienvenida a Súper Conciencia. Soy Gurú, una guía de meditación con inteligencia artificial. Esta práctica es una invitación a explorar cómo te tratas, sin pedirte que cambies de opinión sobre ti de inmediato.
+Te doy la bienvenida a Súper Conciencia. Soy Gurú. Esta práctica es una invitación a explorar cómo te tratas, sin pedirte que cambies de opinión sobre ti de inmediato.
 
 No tienes que sentir seguridad ni repetir frases que no crees. Puedes escuchar, adaptar las palabras o simplemente prestar atención a tu entorno.
 

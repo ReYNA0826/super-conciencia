@@ -3,9 +3,15 @@ import { useLang } from '../i18n/LanguageContext';
 import type { StringKey } from '../i18n/strings';
 import { setParticipants, setSanctuaryState } from '../lib/sceneBridge';
 import { joinSanctuary } from '../lib/presence';
+import { formatGathering, isLive, loadUpcomingGatherings, type Gathering } from '../lib/gatherings';
 import { pauseAmbient, resumeAmbient, startAmbient, stopAmbient } from '../lib/ambient';
 import { buildSanctuarySession } from '../data/sanctuary';
 import { guruConfigured, startGuru, type GuruSession, type GuruStatus } from '../lib/guru';
+import { pauseVoice, playVoice, resumeVoice, stopVoice, unlockVoice } from '../lib/voice';
+import {
+  GURU_SESSIONS, SESSION_MINUTES, blockSeconds, recordedSessionsAvailable, sessionAudioUrl, sessionSeconds,
+  type RecordedSession, type SessionMinutes,
+} from '../data/guruSessions';
 import {
   DURATIONS, GOALS, MUSICS, VOICES,
   loadSanctuaryPrefs, saveSanctuaryPrefs,
@@ -18,8 +24,10 @@ import {
  *
  *   entrada → preparar → meditando → cierre
  *           ↘ aviso de voz → conversando con Gurú → cierre
+ *           ↘ meditaciones con Gurú (grabadas) → escuchando → cierre
+ *           ↘ calendario de reuniones de conciencias
  */
-type Step = 'entry' | 'setup' | 'meditating' | 'consent' | 'guru' | 'closing';
+type Step = 'entry' | 'setup' | 'meditating' | 'consent' | 'guru' | 'closing' | 'calendar' | 'library' | 'recorded';
 
 type Props = { onBack: () => void; onComplete: () => void };
 
@@ -55,6 +63,21 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
   const presenceLine = presences === null ? null
     : presences <= 1 ? t('presenceAlone')
       : t('presenceMany').replace('{n}', String(presences));
+
+  // Reuniones de conciencias: las próximas fechas de meditación colectiva.
+  const [gatherings, setGatherings] = useState<Gathering[]>([]);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    let alive = true;
+    void loadUpcomingGatherings().then((list) => { if (alive) setGatherings(list); });
+    const id = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => { alive = false; window.clearInterval(id); };
+  }, []);
+  const upcoming = gatherings.filter((g) => g.startsAt.getTime() + g.minutes * 60_000 > now);
+  const liveNow = upcoming.find((g) => isLive(g, now)) ?? null;
+  const gatheringLine = liveNow ? t('gatheringLive')
+    : upcoming[0] ? t('gatheringNext').replace('{when}', formatGathering(upcoming[0], lang))
+      : null;
 
   const update = (patch: Partial<SanctuaryPrefs>) => {
     const next = { ...prefs, ...patch };
@@ -99,9 +122,71 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
     setPlaying(!playing);
   };
 
+  // ── Meditaciones con Gurú (grabadas) ──────────────────────────────────────
+  const [recorded, setRecorded] = useState<RecordedSession>(GURU_SESSIONS[0]);
+  const [recMinutes, setRecMinutes] = useState<SessionMinutes>(25);
+  const [recElapsed, setRecElapsed] = useState(0);
+  const [recPlaying, setRecPlaying] = useState(true);
+  const recSpoken = useRef(-1); // último bloque cuya voz ya se lanzó
+  const recCount = recorded.blocks.length;
+  const recTotal = sessionSeconds(recMinutes, recCount);
+  const recIdx = useMemo(() => {
+    let acc = 0;
+    for (let i = 0; i < recCount; i++) {
+      acc += blockSeconds(recMinutes, i, recCount);
+      if (recElapsed < acc) return i;
+    }
+    return recCount - 1;
+  }, [recMinutes, recCount, recElapsed]);
+
+  const speakBlock = (index: number) => {
+    if (recSpoken.current === index) return;
+    recSpoken.current = index;
+    playVoice(sessionAudioUrl(recorded.id, lang, prefs.voice, index), 1);
+  };
+
+  const beginRecorded = () => {
+    setRecElapsed(0);
+    setRecPlaying(true);
+    setStep('recorded');
+    // Dentro del toque: los teléfonos solo dejan sonar lo que empieza con un toque.
+    unlockVoice();
+    recSpoken.current = -1;
+    speakBlock(0);
+    startAmbient(prefs.music);
+  };
+
+  useEffect(() => {
+    if (step !== 'recorded' || !recPlaying) return;
+    const id = window.setInterval(() => setRecElapsed((e) => e + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [step, recPlaying]);
+
+  // Al pasar de bloque suena su voz; al terminar el tiempo, cierre.
+  useEffect(() => {
+    if (step !== 'recorded') return;
+    if (recElapsed >= recTotal) { setStep('closing'); return; }
+    speakBlock(recIdx);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, recIdx, recElapsed >= recTotal]);
+
+  const toggleRecorded = () => {
+    if (recPlaying) { pauseVoice(); pauseAmbient(); } else { resumeVoice(); resumeAmbient(); }
+    setRecPlaying(!recPlaying);
+  };
+
+  // La voz grabada se calla al salir de la práctica o del santuario.
+  useEffect(() => {
+    if (step !== 'recorded') stopVoice();
+  }, [step]);
+  useEffect(() => () => stopVoice(), []);
+
+  const recRemaining = Math.max(0, recTotal - recElapsed);
+  const recClock = `${Math.floor(recRemaining / 60)}:${String(recRemaining % 60).padStart(2, '0')}`;
+
   // La música acompaña solo la práctica: sale con suavidad al cerrar o al irse.
   useEffect(() => {
-    if (step !== 'meditating') stopAmbient(4);
+    if (step !== 'meditating' && step !== 'recorded') stopAmbient(4);
   }, [step]);
   useEffect(() => () => stopAmbient(0.4), []);
 
@@ -109,9 +194,10 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
   const lastPhase = idx === phases.length - 1;
   useEffect(() => {
     if (step === 'meditating') setSanctuaryState(lastPhase ? 'closing' : 'meditating');
+    else if (step === 'recorded') setSanctuaryState(recIdx === recCount - 1 ? 'closing' : 'meditating');
     else if (step === 'closing') setSanctuaryState('closing');
     else setSanctuaryState('resting');
-  }, [step, lastPhase]);
+  }, [step, lastPhase, recIdx, recCount]);
   useEffect(() => () => setSanctuaryState('resting'), []);
 
   // ── Gurú ──────────────────────────────────────────────────────────────────
@@ -160,9 +246,14 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
           <p style={lead}>{t('sanctuaryWelcome')}</p>
           <p style={body}>{t('sanctuaryIntro')}</p>
           {presenceLine && <span style={{ ...note, color: 'var(--gold)', opacity: 0.85 }} role="status">{presenceLine}</span>}
+          {gatheringLine && <span style={{ ...note, marginTop: 4, opacity: 0.85 }}>{gatheringLine}</span>}
           <div style={stack}>
-            <button className="sc-btn" onClick={() => setStep('setup')}>{t('enterMeditation')}</button>
+            <button className="sc-btn" onClick={() => setStep('setup')}>{liveNow ? t('gatheringJoin') : t('enterMeditation')}</button>
+            {recordedSessionsAvailable && (
+              <button className="sc-btn" onClick={() => setStep('library')}>{t('guruSessions')}</button>
+            )}
             <button className="sc-btn" onClick={() => { setGuruNote(false); setStep('consent'); }}>{t('talkToGuru')}</button>
+            <button className="sc-btn" onClick={() => setStep('calendar')}>{t('gatherings')}</button>
           </div>
           <button style={quiet} onClick={onBack}>{t('back')}</button>
         </Panel>
@@ -242,6 +333,96 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
         </Panel>
       )}
 
+      {step === 'library' && (
+        <Panel>
+          <h2 style={title}>{t('guruSessions')}</h2>
+          <p style={body}>{t('guruSessionsIntro')}</p>
+          <ul style={dateList}>
+            {GURU_SESSIONS.map((s) => {
+              const on = s.id === recorded.id;
+              return (
+                <li key={s.id} style={{ ...dateItem, padding: 0, borderColor: on ? 'var(--gold)' : 'var(--panel-border)' }}>
+                  <button type="button" style={sessionBtn} aria-pressed={on} onClick={() => setRecorded(s)}>
+                    <span style={dateWhen}>{s.title[lang]}</span>
+                    <span style={dateMeta}>{s.about[lang]}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          <Row label={t('duration')}>
+            {SESSION_MINUTES.map((m) => (
+              <Chip key={m} on={recMinutes === m} onClick={() => setRecMinutes(m)}>{m} min</Chip>
+            ))}
+          </Row>
+          <Row label={t('voice')}>
+            {VOICES.map((v) => (
+              <Chip key={v} on={prefs.voice === v} onClick={() => update({ voice: v })}>{t(VOICE_LABEL[v])}</Chip>
+            ))}
+          </Row>
+          <Row label={t('music')}>
+            {MUSICS.map((m) => (
+              <Chip key={m} on={prefs.music === m} onClick={() => update({ music: m })}>{t(MUSIC_LABEL[m])}</Chip>
+            ))}
+          </Row>
+          <button className="sc-btn" style={{ marginTop: 18 }} onClick={beginRecorded}>{t('beginMeditation')}</button>
+          <span style={note}>{t('needsInternet')}</span>
+          <button style={quiet} onClick={() => setStep('entry')}>{t('back')}</button>
+        </Panel>
+      )}
+
+      {step === 'recorded' && (
+        <Panel soft>
+          <span style={{ ...note, marginTop: 0, marginBottom: 8, color: 'var(--gold)', opacity: 0.85 }}>{recorded.title[lang]}</span>
+          <p style={phaseText}>{recorded.blocks[recIdx]?.[lang]}</p>
+          <div style={{ display: 'flex', gap: 5, justifyContent: 'center', marginTop: 14 }}>
+            {recorded.blocks.map((_, i) => (
+              <span key={i} style={{ ...dot, width: 6, height: 6, background: i <= recIdx ? 'var(--gold)' : 'rgba(255,255,255,0.22)' }} />
+            ))}
+          </div>
+          <span style={{ ...note, marginTop: 10 }}>
+            {recClock}{presences !== null && presences > 1 ? ` · ${t('presenceMany').replace('{n}', String(presences))}` : ''}
+          </span>
+          <div style={{ display: 'flex', gap: 18, justifyContent: 'center', alignItems: 'center', marginTop: 10 }}>
+            <button className="sc-btn" style={{ padding: '9px 22px', fontSize: 13 }} onClick={toggleRecorded}>
+              {recPlaying ? t('pause') : t('play')}
+            </button>
+            <button style={{ ...quiet, marginTop: 0 }} onClick={() => setStep('closing')}>{t('leaveGently')}</button>
+          </div>
+        </Panel>
+      )}
+
+      {step === 'calendar' && (
+        <Panel>
+          <h2 style={title}>{t('gatherings')}</h2>
+          <p style={body}>{t('gatheringsIntro')}</p>
+          {upcoming.length === 0 && <p style={lead}>{t('gatheringsEmpty')}</p>}
+          {upcoming.length > 0 && (
+            <ul style={dateList}>
+              {upcoming.map((g) => {
+                const live = isLive(g, now);
+                return (
+                  <li key={g.id} style={{ ...dateItem, borderColor: live ? 'var(--gold)' : 'var(--panel-border)' }}>
+                    <span style={dateWhen}>{formatGathering(g, lang)}</span>
+                    <span style={dateMeta}>
+                      {lang === 'es' ? g.titleEs : g.titleEn} · {g.minutes} min
+                    </span>
+                    {live && <span style={{ ...dateMeta, color: 'var(--gold)', opacity: 1 }} role="status">{t('gatheringLive')}</span>}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {liveNow && (
+            <div style={stack}>
+              <button className="sc-btn" onClick={() => setStep('setup')}>{t('gatheringJoin')}</button>
+            </div>
+          )}
+          {upcoming.length > 0 && <span style={note}>{t('gatheringLocalTime')}</span>}
+          <button style={quiet} onClick={() => setStep('entry')}>{t('back')}</button>
+        </Panel>
+      )}
+
       {step === 'closing' && (
         <Panel>
           <p style={lead}>{t('sanctuaryClosing')}</p>
@@ -312,6 +493,17 @@ const quiet: React.CSSProperties = {
 };
 const note: React.CSSProperties = { display: 'block', fontSize: 10.5, letterSpacing: '0.08em', opacity: 0.6, marginTop: 10 };
 const rowLabel: React.CSSProperties = { fontSize: 10.5, letterSpacing: '0.16em', textTransform: 'uppercase', opacity: 0.65, marginBottom: 7 };
+const dateList: React.CSSProperties = { listStyle: 'none', padding: 0, margin: '14px 0 0', width: '100%', display: 'flex', flexDirection: 'column', gap: 8 };
+const dateItem: React.CSSProperties = {
+  display: 'flex', flexDirection: 'column', gap: 3, padding: '11px 14px', borderRadius: 14,
+  border: '1px solid var(--panel-border)', background: 'rgba(18, 12, 51, 0.45)',
+};
+const sessionBtn: React.CSSProperties = {
+  display: 'flex', flexDirection: 'column', gap: 3, width: '100%', padding: '11px 14px',
+  background: 'none', border: 'none', color: 'var(--ink)', textAlign: 'center', borderRadius: 14,
+};
+const dateWhen: React.CSSProperties = { fontSize: 14, lineHeight: 1.4 };
+const dateMeta: React.CSSProperties = { fontSize: 11.5, letterSpacing: '0.04em', opacity: 0.7 };
 const phaseText: React.CSSProperties = { fontSize: 17, lineHeight: 1.6, margin: 0, minHeight: 54 };
 const dot: React.CSSProperties = { width: 7, height: 7, borderRadius: '50%', transition: 'background .6s ease' };
 const orb: React.CSSProperties = {

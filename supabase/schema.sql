@@ -156,3 +156,29 @@ grant execute on function public.redeem_invitation(text) to authenticated;
 
 create index if not exists invitations_created_by_idx on public.invitations (created_by);
 create index if not exists invitations_redeemed_by_idx on public.invitations (redeemed_by);
+
+-- ── Reuniones de conciencias (calendario del nivel 7) ───────────────────────
+-- Fechas de las meditaciones colectivas en el Santuario del Éter.
+-- Cualquiera puede leerlas. No hay política de escritura: solo se agregan o cambian
+-- desde el panel de Supabase. No guarda ningún dato de las personas.
+create table if not exists public.gatherings (
+  id uuid primary key default gen_random_uuid(),
+  starts_at timestamptz not null,
+  minutes integer not null default 30 check (minutes between 5 and 180),
+  title_es text not null default 'Meditación colectiva',
+  title_en text not null default 'Collective meditation',
+  created_at timestamptz not null default now()
+);
+create index if not exists gatherings_starts_at_idx on public.gatherings (starts_at);
+alter table public.gatherings enable row level security;
+drop policy if exists "anyone can read the calendar" on public.gatherings;
+create policy "anyone can read the calendar" on public.gatherings
+  for select to anon, authenticated using (true);
+
+-- ── Audios de las meditaciones grabadas (Supabase Storage) ──────────────────
+-- Bucket público de solo lectura. No hay políticas de escritura: los audios se suben
+-- desde el panel de Supabase (o abriendo un permiso temporal y cerrándolo al terminar).
+-- Ruta: meditaciones/<id>/<idioma>-<f|m>/<NN>.m4a   (ej. cuidarme/es-f/01.m4a)
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('meditaciones', 'meditaciones', true, 5242880, array['audio/mp4','audio/mpeg','audio/x-m4a'])
+on conflict (id) do nothing;

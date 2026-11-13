@@ -32,15 +32,15 @@ export function unlockVoice() {
   void a.play().catch(() => undefined).finally(() => { a.muted = false; });
 }
 
-/** Reproduce el audio de una fase desde el principio. */
-export function playVoice(url: string) {
+/** Reproduce el audio de una fase desde el principio. `rate` 1 = tal como se grabó. */
+export function playVoice(url: string, rate: number = RATE) {
   const a = player();
   if (!a) return;
   a.pause();
   a.muted = false;
   a.src = url;
   a.currentTime = 0;
-  a.playbackRate = RATE;
+  a.playbackRate = rate;
   a.preservesPitch = true;
   void a.play().catch((err) => console.warn('[voice] no se pudo reproducir', url, err));
 }

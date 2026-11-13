@@ -26,3 +26,6 @@ yarn-error.log*
 # typescript build cache
 *.tsbuildinfo
 .cap6-backup/
+
+# audios originales de las meditaciones grabadas: pesan mucho; la app los lee de Supabase Storage
+store-assets/voz/
