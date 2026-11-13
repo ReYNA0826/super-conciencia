@@ -6,6 +6,7 @@ import { setSanctuaryState } from '../lib/sceneBridge';
 import { pauseAmbient, resumeAmbient, startAmbient, stopAmbient } from '../lib/ambient';
 import { loadSanctuaryPrefs } from '../lib/prefs';
 import { pauseVoice, playVoice, resumeVoice, stopVoice } from '../lib/voice';
+import { allowSleep, keepAwake } from '../lib/wakeLock';
 import WorldBackdrop, { WORLD_IMAGE } from '../components/WorldBackdrop';
 
 type Props = {
@@ -71,6 +72,12 @@ export default function Meditation({ level, onClose, onComplete }: Props) {
   }, []);
   useEffect(() => {
     if (done) stopAmbient(6);
+  }, [done]);
+  // La pantalla no se apaga mientras dura la práctica (si se bloquea, se corta el audio).
+  useEffect(() => {
+    if (done) { allowSleep(); return; }
+    keepAwake();
+    return allowSleep;
   }, [done]);
   const togglePlaying = () => {
     if (playing) { pauseAmbient(); pauseVoice(); } else { resumeAmbient(); resumeVoice(); }

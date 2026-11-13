@@ -6,6 +6,7 @@
  * consentimiento del santuario. Nada de esto se ejecuta al cargar la app.
  */
 import type { VoiceChoice } from './prefs';
+import { setAudioSession } from './audioSession';
 
 const AGENT_ID = import.meta.env.VITE_ELEVENLABS_AGENT_ID;
 
@@ -26,16 +27,28 @@ export async function startGuru(
 ): Promise<GuruSession> {
   if (!AGENT_ID) throw new Error('guru-not-configured');
   onStatus('connecting');
-  // El SDK pesa: se carga solo cuando el usuario decide conversar.
-  const { Conversation } = await import('@elevenlabs/client');
-  const voiceId = VOICE_IDS[voice];
-  const conversation = await Conversation.startSession({
-    agentId: AGENT_ID,
-    connectionType: 'webrtc',
-    ...(voiceId ? { overrides: { tts: { voiceId } } } : {}),
-    onModeChange: ({ mode }) => onStatus(mode === 'speaking' ? 'speaking' : 'listening'),
-    onDisconnect: () => onStatus('ended'),
-    onError: () => onStatus('error'),
-  });
-  return { end: () => conversation.endSession() };
+  // iPhone: tras una meditación la sesión de audio queda en "solo reproducir" y el
+  // micrófono no funcionaría. Gurú necesita reproducir y grabar a la vez.
+  setAudioSession('play-and-record');
+  try {
+    // El SDK pesa: se carga solo cuando el usuario decide conversar.
+    const { Conversation } = await import('@elevenlabs/client');
+    const voiceId = VOICE_IDS[voice];
+    const conversation = await Conversation.startSession({
+      agentId: AGENT_ID,
+      connectionType: 'webrtc',
+      ...(voiceId ? { overrides: { tts: { voiceId } } } : {}),
+      onModeChange: ({ mode }) => onStatus(mode === 'speaking' ? 'speaking' : 'listening'),
+      onDisconnect: () => { setAudioSession('auto'); onStatus('ended'); },
+      onError: () => onStatus('error'),
+    });
+    return {
+      end: async () => {
+        try { await conversation.endSession(); } finally { setAudioSession('auto'); }
+      },
+    };
+  } catch (err) {
+    setAudioSession('auto');
+    throw err;
+  }
 }

@@ -4,6 +4,7 @@ import type { StringKey } from '../i18n/strings';
 import { setParticipants, setSanctuaryState } from '../lib/sceneBridge';
 import { joinSanctuary } from '../lib/presence';
 import { pauseAmbient, resumeAmbient, startAmbient, stopAmbient } from '../lib/ambient';
+import { allowSleep, keepAwake } from '../lib/wakeLock';
 import { buildSanctuarySession } from '../data/sanctuary';
 import { guruConfigured, startGuru, type GuruSession, type GuruStatus } from '../lib/guru';
 import {
@@ -104,6 +105,13 @@ export default function Sanctuary({ onBack, onComplete }: Props) {
     if (step !== 'meditating') stopAmbient(4);
   }, [step]);
   useEffect(() => () => stopAmbient(0.4), []);
+
+  // La pantalla no se apaga durante la práctica ni mientras se conversa con Gurú.
+  useEffect(() => {
+    if (step !== 'meditating' && step !== 'guru') return;
+    keepAwake();
+    return allowSleep;
+  }, [step]);
 
   // ── La sala acompaña: Meditando en la práctica, Cierre al final, Reposo en lo demás ──
   const lastPhase = idx === phases.length - 1;

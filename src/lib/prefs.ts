@@ -2,7 +2,8 @@
  * Preferencias del Santuario del Éter (duración, voz, música, objetivo).
  * Se guardan solo en el teléfono (localStorage); no se envían a ningún servidor.
  */
-export const DURATIONS = [3, 5, 10, 20] as const;
+/** Minutos. El mínimo es 15: una práctica completa necesita al menos ese tiempo (decisión de Reyna, 13-nov-2026). */
+export const DURATIONS = [15, 20, 30] as const;
 export const VOICES = ['female', 'male'] as const;
 export const MUSICS = ['nature', 'ethereal', 'piano', 'silence'] as const;
 export const GOALS = ['calm', 'focus', 'rest', 'connection'] as const;
@@ -20,7 +21,7 @@ export type SanctuaryPrefs = {
 };
 
 const KEY = 'sc-sanctuary-prefs';
-const DEFAULTS: SanctuaryPrefs = { minutes: 5, voice: 'female', music: 'ethereal', goal: 'calm' };
+const DEFAULTS: SanctuaryPrefs = { minutes: 15, voice: 'female', music: 'ethereal', goal: 'calm' };
 
 function pick<T>(allowed: readonly T[], value: unknown, fallback: T): T {
   return allowed.includes(value as T) ? (value as T) : fallback;

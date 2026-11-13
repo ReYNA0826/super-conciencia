@@ -9,6 +9,7 @@
  * cambiar desde código (los fundidos no funcionarían).
  */
 import type { MusicChoice } from './prefs';
+import { setAudioSession } from './audioSession';
 
 /**
  * `gain` nivela las pistas entre sí: medidas, el piano sale a −17 dB, la etérea a
@@ -57,11 +58,6 @@ function ensure(): boolean {
     context.createMediaElementSource(el).connect(gain).connect(out);
     return { el, gain };
   });
-  // iPhone: sin esto, WebAudio se queda mudo cuando el teléfono está en silencio.
-  try {
-    const session = (navigator as unknown as { audioSession?: { type: string } }).audioSession;
-    if (session) session.type = 'playback';
-  } catch { /* no disponible en este sistema */ }
   ctx = context;
   master = out;
   return true;
@@ -112,6 +108,8 @@ export function startAmbient(choice: MusicChoice) {
   clearPending();
   if (!track) { stopAmbient(1); return; }
   if (!ensure() || !ctx || !master) return;
+  // iPhone: sin esto, WebAudio se queda mudo cuando el teléfono está en silencio.
+  setAudioSession('playback');
   void ctx.resume().catch(() => undefined);
   resumeList = [];
   const { url } = track;

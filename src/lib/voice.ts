@@ -8,8 +8,11 @@
  * dentro de un toque (unlockVoice) y después ya puede cambiar de audio por su cuenta.
  */
 
+import { setAudioSession } from './audioSession';
+
 /** La locución se grabó a ritmo de lectura; para meditar se reproduce un poco más lenta. */
 const RATE = 0.88;
+
 
 let el: HTMLAudioElement | null = null;
 
@@ -36,6 +39,7 @@ export function unlockVoice() {
 export function playVoice(url: string) {
   const a = player();
   if (!a) return;
+  setAudioSession('playback');
   a.pause();
   a.muted = false;
   a.src = url;
