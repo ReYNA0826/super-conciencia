@@ -5,16 +5,13 @@ import { deleteMyAccount, type AppUser } from '../lib/auth';
 import type { StringKey } from '../i18n/strings';
 import { MAX_INVITATIONS, createInvitation, type MyInvitation } from '../lib/invitations';
 import {
-  MUSICS, VOICES, loadSanctuaryPrefs, saveSanctuaryPrefs,
-  type MusicChoice, type SanctuaryPrefs, type VoiceChoice,
+  MUSICS, MUSIC_LABEL, VOICES, loadSanctuaryPrefs, saveSanctuaryPrefs,
+  type SanctuaryPrefs, type VoiceChoice,
 } from '../lib/prefs';
 
 const PRIVACY_URL = 'https://dreameducationus.com/super-conciencia-privacidad/';
 
 const VOICE_LABEL: Record<VoiceChoice, StringKey> = { female: 'voiceFemale', male: 'voiceMale' };
-const MUSIC_LABEL: Record<MusicChoice, StringKey> = {
-  nature: 'musicNature', ethereal: 'musicEthereal', piano: 'musicPiano', silence: 'musicSilence',
-};
 
 type Props = {
   completed: number[];
@@ -27,11 +24,10 @@ type Props = {
   onInvitesChanged: () => void;
   onSignOut: () => void;
   onDeleted: () => void;
-  onBack: () => void;
 };
 
 export default function Profile({
-  completed, unlocked, user, invites, canInvite, onInvitesChanged, onSignOut, onDeleted, onBack,
+  completed, unlocked, user, invites, canInvite, onInvitesChanged, onSignOut, onDeleted,
 }: Props) {
   const { lang, setLang, t } = useLang();
   const [confirming, setConfirming] = useState(false);
@@ -95,15 +91,15 @@ export default function Profile({
         <h3 style={{ fontSize: 13, letterSpacing: '0.1em', marginTop: 0 }}>{t('progress')}</h3>
         {LEVELS.map((lvl) => {
           const isFinal = lvl.id === 7;
-          const done = isFinal ? unlocked : completed.includes(lvl.id);
+          const done = completed.includes(lvl.id);
           return (
             <div key={lvl.id} style={row}>
               <span style={{ ...dot, background: done ? lvl.color : 'rgba(255,255,255,0.15)' }} />
               <span style={{ fontSize: 12, opacity: done ? 1 : 0.6 }}>
                 {lang === 'es' ? lvl.es : lvl.en}
               </span>
-              <span style={{ marginLeft: 'auto', fontSize: 11, opacity: 0.7 }}>
-                {isFinal && !unlocked ? t('sealed') : done ? '✓' : ''}
+              <span style={{ marginLeft: 'auto', fontSize: 10.5, letterSpacing: '0.06em', opacity: 0.75 }}>
+                {isFinal ? t(unlocked ? 'open' : 'sealed') : done ? `✓ ${t('statusDone')}` : t('statusAvailable')}
               </span>
             </div>
           );
@@ -175,7 +171,6 @@ export default function Profile({
       </section>
 
       <div style={{ display: 'flex', gap: 12, marginTop: 22 }}>
-        <button className="sc-btn" onClick={onBack}>{t('back')}</button>
         {user && (
           <button className="sc-btn" onClick={onSignOut} style={{ background: 'rgba(60,30,80,0.5)' }}>
             {t('signOut')}
@@ -209,13 +204,16 @@ const dangerLink: React.CSSProperties = {
   background: 'none', border: 'none', color: '#ffb3c1', fontSize: 12.5, textDecoration: 'underline', opacity: 0.85,
 };
 
+// La zona que se desplaza empieza debajo de la hora del teléfono y termina encima de la
+// navegación inferior, para que el contenido nunca quede tapado por ninguna de las dos.
 const wrap: React.CSSProperties = {
-  height: '100%',
+  marginTop: 'var(--safe-top)',
+  height: 'calc(100% - var(--safe-top) - var(--tabbar) - var(--safe-bottom))',
   overflowY: 'auto',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  padding: 'calc(var(--safe-top) + 28px) 20px calc(var(--safe-bottom) + 28px)',
+  padding: '22px 20px 28px',
 };
 const row: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0' };
 const chips: React.CSSProperties = { display: 'flex', flexWrap: 'wrap', gap: 7 };

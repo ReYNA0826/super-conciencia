@@ -11,13 +11,25 @@
 import type { MusicChoice } from './prefs';
 
 /**
- * `gain` nivela las pistas entre sí: medidas, el piano sale a −17 dB, la etérea a
- * −23 dB y la de naturaleza a −31 dB. Con estos valores las tres quedan cerca de −24 dB.
+ * `gain` nivela las pistas entre sí. Las tres ya vienen niveladas a unos −24 dB dentro
+ * del archivo; el piano queda un poco más bajo porque tiene pausas, y se compensa aquí.
+ *
+ * Pistas de noviembre 2026 (originales en store-assets/audio-originales/v2): naturaleza es
+ * agua y viento continuos, la etérea un fondo sostenido y el piano va a ritmo libre.
+ * Ninguna tiene campanas ni golpes repetidos: las anteriores sonaban todas a campana.
  */
+// 14-nov: reemplazadas por la música propia de El Mapa de Tu Bienestar (creada por Reyna).
+// Originales en store-assets/audio-originales/v3; niveladas a −24 dB con scripts/preparar-musica.py.
+const track = (key: string) => ({ url: `/audio/${key}.m4a`, gain: 1 });
 const TRACKS: Record<MusicChoice, { url: string; gain: number } | null> = {
-  nature: { url: '/audio/nature.m4a', gain: 2.2 },
-  ethereal: { url: '/audio/ethereal.m4a', gain: 1 },
-  piano: { url: '/audio/piano.m4a', gain: 0.45 },
+  santuario: track('santuario'),
+  refugio: track('refugio'),
+  bosque: track('bosque'),
+  ceremonial: track('ceremonial'),
+  amanecer: track('amanecer'),
+  saturno: track('saturno'),
+  mente: track('mente'),
+  mar: track('mar'),
   silence: null,
 };
 
@@ -35,6 +47,9 @@ let decks: Deck[] = [];
 let active = 0;
 let currentUrl: string | null = null;
 let volume = 1;
+// Volumen que elige la persona en el reproductor (0–1); multiplica al de la pista.
+let userLevel = 1;
+let audible = false;
 let watch: number | null = null;
 let pending: number | null = null;
 let resumeList: HTMLAudioElement[] = [];
@@ -126,13 +141,21 @@ export function startAmbient(choice: MusicChoice) {
   first.el.currentTime = 0;
   first.gain.gain.value = 1;
   void first.el.play().catch(() => undefined);
-  ramp(master, volume, FADE_IN);
+  audible = true;
+  ramp(master, volume * userLevel, FADE_IN);
   startWatch();
+}
+
+/** Volumen de la música elegido por la persona (0–1). Se aplica al instante si está sonando. */
+export function setAmbientVolume(value: number) {
+  userLevel = Math.min(1, Math.max(0, value));
+  if (ctx && master && audible) ramp(master, volume * userLevel, 0.15);
 }
 
 export function pauseAmbient() {
   if (!ctx || !master) return;
   clearPending();
+  audible = false;
   ramp(master, 0, PAUSE_FADE);
   resumeList = decks.filter((d) => !d.el.paused && !d.el.ended).map((d) => d.el);
   pending = window.setTimeout(() => { resumeList.forEach((el) => el.pause()); pending = null; }, PAUSE_FADE * 1000 + 50);
@@ -144,12 +167,14 @@ export function resumeAmbient() {
   void ctx.resume().catch(() => undefined);
   resumeList.forEach((el) => void el.play().catch(() => undefined));
   resumeList = [];
-  ramp(master, volume, PAUSE_FADE * 2);
+  audible = true;
+  ramp(master, volume * userLevel, PAUSE_FADE * 2);
 }
 
 export function stopAmbient(fadeSeconds = 4) {
   if (!ctx || !master) return;
   clearPending();
+  audible = false;
   ramp(master, 0, fadeSeconds);
   pending = window.setTimeout(() => {
     stopWatch();

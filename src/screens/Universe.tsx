@@ -6,14 +6,16 @@ type Props = {
   unlocked: boolean;
   onOpenLevel: (id: number) => void;
   onOpenPortal: () => void;
-  onOpenProfile: () => void;
 };
 
 /**
- * Mapa de niveles. La escena de Spline ya muestra el título y el portal arriba,
- * así que la lista de meditaciones va en la hoja inferior, con su propio scroll.
+ * Explorar: los siete niveles. La escena de Spline ya muestra el título y el portal arriba,
+ * así que la lista va en la hoja inferior, con su propio scroll.
+ *
+ * Cada tarjeta dice su estado con palabras: «Disponible» o «Completado». La marca ✓ es solo
+ * para lo que la persona terminó de verdad.
  */
-export default function Universe({ completed, unlocked, onOpenLevel, onOpenPortal, onOpenProfile }: Props) {
+export default function Universe({ completed, unlocked, onOpenLevel, onOpenPortal }: Props) {
   const { lang, t } = useLang();
 
   return (
@@ -43,19 +45,19 @@ export default function Universe({ completed, unlocked, onOpenLevel, onOpenPorta
                   <strong style={{ fontSize: 12 }}>
                     {lvl.id}. {lang === 'es' ? lvl.es : lvl.en}
                   </strong>
-                  {isDone && <span style={{ marginLeft: 'auto', fontSize: 12, color: lvl.color }}>✓</span>}
                 </div>
                 <div style={{ fontSize: 11, opacity: 0.75, marginTop: 4 }}>
-                  {locked ? t('sealed') : lang === 'es' ? lvl.intentionEs : lvl.intentionEn}
+                  {lang === 'es' ? lvl.intentionEs : lvl.intentionEn}
+                </div>
+                <div style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 7, color: isDone ? lvl.color : 'var(--ink)', opacity: isDone ? 1 : 0.55 }}>
+                  {isFinal
+                    ? t(locked ? 'sealed' : 'open')
+                    : isDone ? `✓ ${t('statusDone')}` : t('statusAvailable')}
                 </div>
               </button>
             );
           })}
         </div>
-
-        <button className="sc-btn" style={{ padding: '10px 22px', marginTop: 16 }} onClick={onOpenProfile}>
-          {t('profile')}
-        </button>
       </div>
     </div>
   );

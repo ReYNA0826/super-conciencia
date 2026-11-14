@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { STRINGS, type Lang, type StringKey } from './strings';
 
 type LanguageCtx = {
@@ -14,6 +14,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('sc-lang') : null;
     return saved === 'en' ? 'en' : 'es';
   });
+
+  // El CSS usa este atributo para mostrar los rótulos de la escena en un solo idioma.
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
   const value = useMemo<LanguageCtx>(
     () => ({

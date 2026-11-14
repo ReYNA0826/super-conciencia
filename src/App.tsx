@@ -4,8 +4,12 @@ import SceneGuard from './components/SceneGuard';
 import WorldBackdrop, { PORTAL_IMAGE } from './components/WorldBackdrop';
 import Onboarding from './screens/Onboarding';
 import Auth from './screens/Auth';
+import Home from './screens/Home';
 import Universe from './screens/Universe';
+import TabBar, { type Tab } from './components/TabBar';
 import Meditation from './screens/Meditation';
+import Session from './screens/Session';
+import { recordedSessionsAvailable, sessionForLevel } from './data/sessions';
 import Portal from './screens/Portal';
 import Profile from './screens/Profile';
 import { isPortalUnlocked, setPortalState } from './lib/portal';
@@ -17,11 +21,19 @@ import { unlockVoice } from './lib/voice';
 import { listenForAuthLinks } from './lib/authLinks';
 import { NO_INVITES, loadInviteState, type InviteState } from './lib/invitations';
 
-export type Screen = 'onboarding' | 'auth' | 'newPassword' | 'universe' | 'meditation' | 'portal' | 'profile';
+export type Screen = 'onboarding' | 'auth' | 'newPassword' | 'home' | 'universe' | 'meditation' | 'session' | 'portal' | 'profile';
+
+/** Pantallas con la navegación inferior (Inicio, Explorar, Santuario, Perfil). */
+const TAB_OF: Partial<Record<Screen, Tab>> = { home: 'home', universe: 'explore', portal: 'sanctuary', profile: 'profile' };
+const SCREEN_OF: Record<Tab, Screen> = { home: 'home', explore: 'universe', sanctuary: 'portal', profile: 'profile' };
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('onboarding');
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
+  // A dónde vuelve la persona al cerrar una meditación: al lugar desde donde la abrió.
+  const [returnTo, setReturnTo] = useState<Screen>('home');
+  // Meditación grabada abierta en el reproductor.
+  const [sessionId, setSessionId] = useState<string>('nivel-1');
   const [user, setUser] = useState<AppUser | null>(null);
   const [completed, setCompleted] = useState<number[]>([]);
   const [invites, setInvites] = useState<InviteState>(NO_INVITES);
@@ -38,7 +50,7 @@ export default function App() {
   }, [userId]);
   useEffect(refreshInvites, [refreshInvites]);
   const inAether = screen === 'portal' && unlocked;
-  const dimScene = screen === 'meditation' || screen === 'profile' || (screen === 'portal' && !unlocked);
+  const dimScene = screen === 'meditation' || screen === 'session' || screen === 'profile' || (screen === 'portal' && !unlocked);
 
   // Sesión de Supabase (si hay backend configurado).
   useEffect(() => {
@@ -51,7 +63,7 @@ export default function App() {
   useEffect(() => listenForAuthLinks((result) => {
     if (result === 'signed-in') {
       setAuthNotice(false);
-      setScreen('universe');
+      setScreen('home');
     } else if (result === 'recovery') {
       setAuthNotice(false);
       setScreen('newPassword'); // llegó por "restablecer contraseña"
@@ -82,11 +94,30 @@ export default function App() {
   const openLevel = (id: number) => {
     unlockAmbient(); // dentro del toque: permite que la música arranque en el teléfono
     unlockVoice(); // y también la voz guía
+    setReturnTo(screen === 'universe' ? 'universe' : 'home');
     setSelectedLevel(id);
-    setScreen('meditation');
+    // Si el nivel ya tiene su meditación grabada, se abre en el reproductor completo.
+    const recorded = recordedSessionsAvailable ? sessionForLevel(id) : undefined;
+    if (recorded) { setSessionId(recorded.id); setScreen('session'); } else setScreen('meditation');
   };
 
-  const begin = () => setScreen(hasBackend && !user ? 'auth' : 'universe');
+  /** Abre una meditación grabada de la biblioteca (por ejemplo, las de Gurú en el Santuario). */
+  const openSession = (id: string) => {
+    unlockAmbient();
+    setReturnTo(screen === 'session' ? returnTo : screen);
+    setSessionId(id);
+    setScreen('session');
+  };
+
+  const begin = () => setScreen(hasBackend && !user ? 'auth' : 'home');
+
+  // La escena de Spline trae su propio HTML (rótulos de planetas): estas marcas le dicen
+  // al CSS en qué pantalla estamos, para mostrarlos solo donde no estorban.
+  const tab = TAB_OF[screen];
+  useEffect(() => {
+    document.body.dataset.screen = screen;
+    document.body.dataset.tabs = tab ? '1' : '0';
+  }, [screen, tab]);
 
   const doSignOut = async () => {
     await signOut();
@@ -115,7 +146,7 @@ export default function App() {
           width: '100%',
           // En pantallas de enfoque (meditación, perfil, portal) se oscurece la escena
           // para que el texto no compita con los planetas.
-          background: dimScene ? 'rgba(7, 10, 30, 0.86)' : 'transparent',
+          background: dimScene ? 'rgba(7, 10, 30, 0.93)' : 'transparent',
           transition: 'background 0.6s ease',
         }}
       >
@@ -123,30 +154,48 @@ export default function App() {
         {screen === 'auth' && (
           <Auth
             linkExpired={authNotice}
-            onAuthed={() => { setAuthNotice(false); setScreen('universe'); }}
-            onGuest={() => { setAuthNotice(false); setScreen('universe'); }}
+            onAuthed={() => { setAuthNotice(false); setScreen('home'); }}
+            onGuest={() => { setAuthNotice(false); setScreen('home'); }}
           />
         )}
-        {screen === 'newPassword' && <NewPassword onDone={() => setScreen('universe')} />}
+        {screen === 'newPassword' && <NewPassword onDone={() => setScreen('home')} />}
+        {screen === 'home' && (
+          <Home
+            completed={completed}
+            unlocked={unlocked}
+            onOpenLevel={openLevel}
+            onOpenSession={openSession}
+            onOpenSanctuary={() => setScreen('portal')}
+            onExplore={() => setScreen('universe')}
+          />
+        )}
         {screen === 'universe' && (
           <Universe
             completed={completed}
             unlocked={unlocked}
             onOpenLevel={openLevel}
             onOpenPortal={() => setScreen('portal')}
-            onOpenProfile={() => setScreen('profile')}
           />
         )}
         {screen === 'meditation' && (
-          <Meditation level={selectedLevel} onClose={() => setScreen('universe')} onComplete={completeLevel} />
+          <Meditation level={selectedLevel} onClose={() => setScreen(returnTo)} onComplete={completeLevel} />
+        )}
+        {screen === 'session' && (
+          <Session
+            key={sessionId}
+            sessionId={sessionId}
+            onClose={() => setScreen(returnTo)}
+            onComplete={(level) => { if (level) completeLevel(level); }}
+          />
         )}
         {screen === 'portal' && (
           <Portal
             unlocked={unlocked}
             signedIn={Boolean(userId)}
             onRedeemed={refreshInvites}
-            onBack={() => setScreen('universe')}
+            onBack={() => setScreen('home')}
             onComplete={() => completeLevel(7)}
+            onOpenSession={openSession}
           />
         )}
         {screen === 'profile' && (
@@ -159,10 +208,10 @@ export default function App() {
             onInvitesChanged={refreshInvites}
             onSignOut={doSignOut}
             onDeleted={() => { setUser(null); setCompleted([]); setScreen('onboarding'); }}
-            onBack={() => setScreen('universe')}
           />
         )}
       </main>
+      {tab && <TabBar active={tab} onSelect={(next) => setScreen(SCREEN_OF[next])} />}
     </>
   );
 }

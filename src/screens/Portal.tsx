@@ -11,16 +11,18 @@ type Props = {
   onRedeemed: () => void;
   onBack: () => void;
   onComplete: () => void;
+  /** Abre una meditación grabada en el reproductor. */
+  onOpenSession: (id: string) => void;
 };
 
-export default function Portal({ unlocked, signedIn, onRedeemed, onBack, onComplete }: Props) {
+export default function Portal({ unlocked, signedIn, onRedeemed, onBack, onComplete, onOpenSession }: Props) {
   const { t } = useLang();
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   // Portal abierto: el Santuario del Éter (entrada, meditación, conversación con Gurú).
-  if (unlocked) return <Sanctuary onBack={onBack} onComplete={onComplete} />;
+  if (unlocked) return <Sanctuary onBack={onBack} onComplete={onComplete} onOpenSession={onOpenSession} />;
 
   const redeem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,7 +83,7 @@ const wrap: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: '0 24px',
+  padding: '0 24px var(--tabbar)',
 };
 const divider: React.CSSProperties = { height: 1, background: 'var(--panel-border)', opacity: 0.5, margin: '18px 0 16px' };
 const input: React.CSSProperties = {

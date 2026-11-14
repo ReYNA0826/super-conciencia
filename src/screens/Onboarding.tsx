@@ -17,13 +17,14 @@ export default function Onboarding({ onBegin }: { onBegin: () => void }) {
         ))}
       </div>
 
-      <div className="sc-sheet">
-        <p style={{ margin: 0, maxWidth: 320, fontSize: 15, lineHeight: 1.5, opacity: 0.9 }}>
-          {t('tagline')}
-        </p>
-        <button className="sc-btn" style={{ marginTop: 18 }} onClick={onBegin}>
+      {/* El botón va primero y la frase debajo, pequeña: así no tapan el rótulo del primer planeta. */}
+      <div className="sc-sheet sc-sheet--clear">
+        <button className="sc-btn" onClick={onBegin}>
           {t('begin')}
         </button>
+        <p style={{ margin: '12px 0 0', maxWidth: 320, fontSize: 12, lineHeight: 1.5, letterSpacing: '0.04em', opacity: 0.85, textShadow: '0 1px 10px rgba(7,10,30,0.95)' }}>
+          {t('tagline')}
+        </p>
       </div>
     </div>
   );

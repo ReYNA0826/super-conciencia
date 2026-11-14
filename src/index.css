@@ -1,4 +1,6 @@
 :root {
+  /* Alto de la navegación inferior; vale 0 en las pantallas que no la muestran. */
+  --tabbar: 0px;
   --bg: #070a1e;
   --ink: #f4ecff;
   --gold: #f6e3a8;
@@ -60,7 +62,7 @@ button {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 72px 20px calc(var(--safe-bottom) + 24px);
+  padding: 72px 20px calc(var(--safe-bottom) + 24px + var(--tabbar));
   background: linear-gradient(
     to bottom,
     rgba(7, 10, 30, 0) 0%,
@@ -147,3 +149,78 @@ button {
 
 /* Todo lo que va sobre un fondo pintado queda por encima de él. */
 .sc-over > *:not([aria-hidden]) { position: relative; z-index: 1; }
+
+/* Portada: degradado más ligero, para que se lean los planetas de abajo. */
+.sc-sheet--clear {
+  padding-top: 28px;
+  padding-bottom: calc(var(--safe-bottom) + 16px);
+  background: linear-gradient(to bottom, rgba(7, 10, 30, 0) 0%, rgba(7, 10, 30, 0.55) 60%, rgba(7, 10, 30, 0.8) 100%);
+}
+
+/*
+ * Navegación inferior (Inicio, Explorar, Santuario, Perfil).
+ */
+body[data-tabs='1'] { --tabbar: 60px; }
+body[data-focus='1'] { --tabbar: 0px; }
+.sc-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  display: flex;
+  justify-content: space-around;
+  height: calc(60px + var(--safe-bottom));
+  padding: 6px 8px var(--safe-bottom);
+  background: rgba(9, 8, 32, 0.92);
+  border-top: 1px solid rgba(246, 227, 168, 0.22);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+body[data-focus='1'] .sc-tabbar { display: none; }
+.sc-tabbar button {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  opacity: 0.6;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  transition: opacity 0.3s ease, color 0.3s ease;
+}
+.sc-tabbar button[aria-current='page'] { color: var(--gold); opacity: 1; }
+
+/*
+ * HTML que trae la escena del universo (recorrido de Spline):
+ *  - #dots son los números 1–7 y #back su botón de volver: en la app la navegación es la
+ *    de arriba, así que se ocultan.
+ *  - #lbls son los rótulos de los planetas: solo en la portada, donde no hay tarjetas
+ *    encima, y en un solo idioma (el de la app).
+ */
+#dots, #back { display: none !important; }
+body:not([data-screen='onboarding']) #lbls { display: none !important; }
+html[lang='es'] #lbls .lbl i { display: none !important; }
+html[lang='en'] #lbls .lbl b { display: none !important; }
+html[lang='en'] #lbls .lbl i {
+  margin-top: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  color: #fbf1d8;
+  text-shadow: 0 1px 8px rgba(8, 4, 30, 0.95), 0 0 14px rgba(8, 4, 30, 0.8);
+}
+
+/* Deslizadores de volumen del reproductor. */
+.sc-range {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 28px;
+  accent-color: #f6e3a8;
+  background: transparent;
+}
