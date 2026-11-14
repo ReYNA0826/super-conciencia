@@ -11,7 +11,7 @@
 > Lo demás quedó igual.
 >
 > **Antes de publicar hay que resolver lo marcado con [PENDIENTE] y estas tres cosas:**
-> 1. **Dirección:** aquí dice «Suite 16», pero en MI ALMA Dream Education aparece con «Suite 111». ¿Cuál es la correcta?
+> 1. ~~Dirección~~ — RESUELTO (14-nov): «8810 Commodity Circle, Unit 16, Orlando, FL 32819», la registrada en Sunbiz (reporte anual 2026).
 > 2. **Fecha de vigencia:** el día que se publique.
 > 3. **Webhook de ElevenLabs:** quitar el webhook predeterminado del workspace (ver abajo) para que «no se guarda nada» sea cierto sin excepciones.
 
@@ -19,7 +19,7 @@
 
 ## Política de privacidad — Español
 
-Vigente desde el [PENDIENTE: fecha de publicación]. Esta política explica qué datos usa la aplicación SÚPER CONCIENCIA (la “App”), para qué y qué opciones tienes. La App la ofrece Dream Education, Corp. (“Dream Education”, “nosotros”), 8810 Commodity Cir, Suite 16, Orlando, FL 32819, EE. UU.
+Vigente desde el [PENDIENTE: fecha de publicación]. Esta política explica qué datos usa la aplicación SÚPER CONCIENCIA (la “App”), para qué y qué opciones tienes. La App la ofrece Dream Education, Corp. (“Dream Education”, “nosotros”), 8810 Commodity Circle, Unit 16, Orlando, FL 32819, EE. UU.
 
 ### 1. Resumen
 
@@ -96,13 +96,13 @@ La App es una herramienta de meditación y bienestar. No es un servicio médico 
 
 ### 11. Cambios y contacto
 
-Si cambiamos esta política, publicaremos la nueva versión aquí con su fecha. Para cualquier pregunta: contacto@dreameducationus.com · +1 (321) 315-1837 · 8810 Commodity Cir, Suite 16, Orlando, FL 32819, EE. UU.
+Si cambiamos esta política, publicaremos la nueva versión aquí con su fecha. Para cualquier pregunta: contacto@dreameducationus.com · +1 (321) 315-1837 · 8810 Commodity Circle, Unit 16, Orlando, FL 32819, EE. UU.
 
 ---
 
 ## Privacy Policy — English
 
-Effective [PENDING: publication date]. This policy explains what data the SÚPER CONCIENCIA app (the “App”) uses, why, and what choices you have. The App is provided by Dream Education, Corp. (“Dream Education”, “we”), 8810 Commodity Cir, Suite 16, Orlando, FL 32819, USA.
+Effective [PENDING: publication date]. This policy explains what data the SÚPER CONCIENCIA app (the “App”) uses, why, and what choices you have. The App is provided by Dream Education, Corp. (“Dream Education”, “we”), 8810 Commodity Circle, Unit 16, Orlando, FL 32819, USA.
 
 ### 1. Summary
 
@@ -179,7 +179,7 @@ The App is a meditation and wellbeing tool. It is not a medical or psychological
 
 ### 11. Changes and contact
 
-If we change this policy, we will post the new version here with its date. Questions: contacto@dreameducationus.com · +1 (321) 315-1837 · 8810 Commodity Cir, Suite 16, Orlando, FL 32819, USA.
+If we change this policy, we will post the new version here with its date. Questions: contacto@dreameducationus.com · +1 (321) 315-1837 · 8810 Commodity Circle, Unit 16, Orlando, FL 32819, USA.
 
 ---
 
