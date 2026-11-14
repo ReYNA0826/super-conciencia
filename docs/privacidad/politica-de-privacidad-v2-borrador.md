@@ -1,6 +1,6 @@
 # Política de privacidad de SÚPER CONCIENCIA — versión 2 (BORRADOR)
 
-> Borrador del 13 de noviembre de 2026. Reemplaza a la versión publicada el 11 de noviembre en
+> Borrador del 13 de noviembre de 2026, actualizado el 14 de noviembre (reproductor nuevo, meditaciones en la nube y correos por SiteGround). Reemplaza a la versión publicada el 11 de noviembre en
 > https://dreameducationus.com/super-conciencia-privacidad/
 >
 > **Por qué cambia:** la versión publicada dice que la App no usa el micrófono. Desde la versión 5
@@ -10,7 +10,10 @@
 > (ya no menciona el micrófono), punto 4 (nuevo), punto 5 (ElevenLabs), punto 10 (Gurú es IA).
 > Lo demás quedó igual.
 >
-> **Antes de publicar hay que resolver lo marcado con [PENDIENTE].**
+> **Antes de publicar hay que resolver lo marcado con [PENDIENTE] y estas tres cosas:**
+> 1. **Dirección:** aquí dice «Suite 16», pero en MI ALMA Dream Education aparece con «Suite 111». ¿Cuál es la correcta?
+> 2. **Fecha de vigencia:** el día que se publique.
+> 3. **Webhook de ElevenLabs:** quitar el webhook predeterminado del workspace (ver abajo) para que «no se guarda nada» sea cierto sin excepciones.
 
 ---
 
@@ -35,8 +38,8 @@ Vigente desde el [PENDIENTE: fecha de publicación]. Esta política explica qué
 | Invitaciones | Crear códigos de invitación al nivel 7 y verificar el acceso cuando alguien los usa. | Si creas o usas una invitación |
 | Tu voz y lo que conversas con Gurú | Que Gurú pueda escucharte y responderte con voz. | Solo si tocas «Activar voz» en el Santuario del Éter |
 | Presencia en el santuario | Mostrar cuántas personas están meditando en ese momento. Se usa un identificador al azar que no está unido a tu cuenta y no se guarda al salir. | Mientras estás dentro del Santuario del Éter |
-| Preferencias (idioma, movimiento reducido, voz, música, duración y objetivo) | Mostrar la App como la configuraste. Se guardan en tu dispositivo. | Siempre |
-| Datos técnicos (dirección IP, tipo de dispositivo) | Entregar el contenido y mantener el servicio seguro. Los procesan nuestros proveedores de forma automática. | Al usar la App |
+| Preferencias y uso del reproductor (idioma, movimiento reducido, voz, música, volumen, cantidad de guía, duración, objetivo, meditaciones favoritas y el punto donde dejaste una meditación) | Mostrar la App como la configuraste y dejarte continuar donde quedaste. Se guardan solo en tu dispositivo; no se envían a nuestros servidores. | Siempre |
+| Datos técnicos (dirección IP, tipo de dispositivo) | Entregar el contenido —por ejemplo, descargar las meditaciones grabadas— y mantener el servicio seguro. Los procesan nuestros proveedores de forma automática. | Al usar la App |
 
 Si usas la App sin cuenta, tu progreso se guarda solo en tu dispositivo.
 
@@ -62,7 +65,8 @@ Puedes quitar el permiso del micrófono cuando quieras en los ajustes de tu tel�
 
 ### 5. Proveedores que procesan datos por nosotros
 
-- **Supabase** (Estados Unidos): base de datos, autenticación de cuentas y conteo de presencias.
+- **Supabase** (Estados Unidos): base de datos, autenticación de cuentas, conteo de presencias y almacenamiento de las meditaciones grabadas.
+- **SiteGround** (Estados Unidos): envío de los correos para confirmar tu cuenta o restablecer tu contraseña, desde info@dreameducationus.com.
 - **Spline** (Estados Unidos): entrega de las escenas 3D de la App.
 - **ElevenLabs** (Estados Unidos): reconocimiento de voz, inteligencia artificial conversacional y voz de Gurú.
 
@@ -117,8 +121,8 @@ Effective [PENDING: publication date]. This policy explains what data the SÚPER
 | Invitations | To create invitation codes for level 7 and verify access when someone uses one. | If you create or use an invitation |
 | Your voice and what you say to Guru | So Guru can hear you and answer with voice. | Only if you tap “Turn on voice” in the Sanctuary of Aether |
 | Presence in the sanctuary | To show how many people are meditating at that moment. We use a random identifier that is not tied to your account and is not kept when you leave. | While you are inside the Sanctuary of Aether |
-| Preferences (language, reduced motion, voice, music, duration and goal) | To show the App the way you set it. Stored on your device. | Always |
-| Technical data (IP address, device type) | To deliver content and keep the service secure. Processed automatically by our providers. | While using the App |
+| Preferences and player use (language, reduced motion, voice, music, volume, amount of guidance, duration, goal, favorite meditations and where you left off in a meditation) | To show the App the way you set it and let you continue where you left off. Stored only on your device; not sent to our servers. | Always |
+| Technical data (IP address, device type) | To deliver content —for example, downloading the recorded meditations— and keep the service secure. Processed automatically by our providers. | While using the App |
 
 If you use the App without an account, your progress stays only on your device.
 
@@ -144,7 +148,8 @@ You can remove the microphone permission at any time in your phone's settings. T
 
 ### 5. Providers that process data for us
 
-- **Supabase** (United States): database, account authentication and presence count.
+- **Supabase** (United States): database, account authentication, presence count and storage of the recorded meditations.
+- **SiteGround** (United States): sending the emails to confirm your account or reset your password, from info@dreameducationus.com.
 - **Spline** (United States): delivery of the App's 3D scenes.
 - **ElevenLabs** (United States): speech recognition, conversational artificial intelligence and Guru's voice.
 
@@ -193,7 +198,19 @@ Hoy el formulario declara que la App no usa el micrófono. Hay que agregar:
 
 Como tampoco se guarda el texto, no hace falta declarar **Mensajes**.
 
-Para App Store (etiquetas de privacidad): **Contenido del usuario → Datos de audio**, finalidad «Funcionalidad de la app», **no vinculado** a la identidad, **no** se usa para rastreo.
+## Para App Store Connect → Privacidad de la app (etiquetas)
+
+Respuesta general: **«Sí, recopilamos datos»**. Ninguno se usa para **rastreo** (tracking).
+
+| Tipo de dato en Apple | ¿Vinculado a la identidad? | Finalidad |
+|---|---|---|
+| Información de contacto → **Correo electrónico** | Sí | Funcionalidad de la app |
+| Contenido del usuario → **Datos de audio** (voz con Gurú) | No | Funcionalidad de la app |
+| Contenido del usuario → **Otro contenido** (progreso de niveles e invitaciones) | Sí | Funcionalidad de la app |
+| Identificadores → **ID de usuario** (cuenta de Supabase) | Sí | Funcionalidad de la app |
+
+No declarar ubicación, contactos, salud, compras (hasta que exista el cobro), diagnóstico ni datos de uso: la App no los recopila.
+Las preferencias, favoritas y el punto donde quedaste viven solo en el teléfono, así que Apple no los considera «recopilados».
 
 ## Lo que falta en ElevenLabs para que la política sea cierta
 
