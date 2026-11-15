@@ -1,11 +1,9 @@
-# Niveles 5 y 6 — guiones narrados · BORRADOR v1 (15-nov, para revisión de Reyna)
+# Niveles 5 y 6 — guiones narrados · v2 (con las correcciones de Reyna del 15-nov)
 
-## Indicación para producción
-Igual que los niveles 2–4: duración objetivo **16 minutos**, mínimo **15**. Voz cálida, ritmo natural (speed 1.0). Las indicaciones entre paréntesis no se narran. Los silencios son pausas de voz; la música continúa. Medir cada audio terminado y repartir el tiempo que falte entre las prácticas centrales y el descanso final, con aviso antes de cada pausa larga. No repetir que Gurú es inteligencia artificial.
+Cambios de la v2: salida antes de explorar emociones (5·08), «cansancio» como estado, sin prometer calma (5·09), «Volver a lo sencillo» en lugar de buscar el espacio entre pensamientos (5·10), la esfera violeta sin anticipar resultados (5·11), qué significa «expansión» en la bienvenida (6·01), tú eliges cuánto explorar (6·08), «darte cuenta» sin interpretación filosófica (6·09), «hasta donde te resulte agradable» (6·11) y el descanso largo partido en dos con un recordatorio (13a y 13b).
 
-Reglas aplicadas: nada de «debes sentir»; no se dirige la atención a las pausas de la respiración; sensaciones con «quizá notes»; imágenes siempre opcionales con la frase «No necesitas ver la imagen con claridad…» y una alternativa (manos, sonidos, apoyo); avisos antes de los silencios largos.
+Los silencios se ajustan después de medir la voz grabada: objetivo 16 min, mínimo 15.
 
-Estos dos niveles son de **suscripción**: la persona elige voz y música.
 
 ---
 
@@ -20,10 +18,10 @@ Acomódate en una postura estable y cómoda. Sentado, recostado o como tu cuerpo
 ## 03 Un ancla (silencio 30 s)
 Antes de mirar la mente, elige un lugar donde volver cuando te distraigas. Puede ser la respiración, el contacto de tus manos o el apoyo del cuerpo. Escoge el que hoy te resulte más fácil. Quédate un momento con él, tal como está, sin cambiar nada.
 
-## 04 La mente se mueve (silencio 35 s)
+## 04 La mente se mueve (silencio 30 s)
 Ahora nota que, aunque estés quieto, la mente sigue moviéndose. Aparece un recuerdo, un plan, una preocupación, una canción. Es lo que hacen las mentes. No es un error ni significa que lo estés haciendo mal. Solo observa, por un momento, qué aparece.
 
-## 05 Ponerle nombre (silencio 70 s)
+## 05 Ponerle nombre (silencio 65 s)
 Vamos a practicar algo sencillo. Cuando notes un pensamiento, ponle un nombre corto, en silencio y con suavidad: recuerdo, plan, preocupación, juicio, imagen. No importa si el nombre es exacto. Nombrarlo te ayuda a darte cuenta de que estás pensando, en lugar de perderte dentro del pensamiento. Después vuelve a tu ancla. Practícalo ahora, en silencio.
 
 ## 06 Si te enredas (silencio 25 s)
@@ -32,23 +30,26 @@ Es posible que muchas veces te des cuenta tarde, cuando ya llevas un rato dentro
 ## 07 Las nubes (silencio 40 s)
 Si te ayuda, imagina que los pensamientos son nubes que cruzan un cielo amplio. Algunas son ligeras y pasan rápido; otras son densas y se quedan un poco más. Tú no tienes que empujarlas ni detenerlas. No necesitas ver la imagen con claridad. Si imaginarla no te ayuda, puedes seguir nombrando los pensamientos o sintiendo tus manos.
 
-## 08 Las emociones en el cuerpo (silencio 65 s)
-Ahora nota si hay alguna emoción presente: tranquilidad, tristeza, impaciencia, alegría, cansancio. Si la hay, busca dónde se siente en el cuerpo. Quizá notes algo en el pecho, en la garganta, en el vientre o en la cara. Solo obsérvalo, con curiosidad y sin juzgarlo. Si no encuentras nada en especial, también está bien. Me quedaré en silencio mientras observas.
+## 08 Las emociones en el cuerpo (silencio 60 s)
+Ahora, si quieres, nota cómo te sientes. Puede haber tranquilidad, tristeza, impaciencia o alegría, o quizá un estado como el cansancio. Si hay alguna emoción presente y te resulta cómodo explorarla, nota si la acompaña alguna sensación corporal. No necesitas encontrar dónde se siente ni entender por qué aparece. Puedes volver a las manos, a los sonidos o al apoyo del cuerpo cuando quieras. Me quedaré en silencio mientras eliges dónde descansar la atención.
 
-## 09 No eres tus pensamientos (silencio 30 s)
-Los pensamientos aparecen, cambian y se van. Algunos son ciertos, otros no. Algunos son útiles, otros solo son costumbre. Puedes escucharlos sin obedecerlos de inmediato. Tú eres quien se da cuenta de ellos, y esa parte de ti puede quedarse tranquila mientras pasan.
+## 09 Notar sin responder (silencio 27 s)
+Los pensamientos aparecen, cambian y se van. Algunos son ciertos, otros no. Algunos son útiles, otros solo son costumbre. Puedes notar un pensamiento sin responder de inmediato. No necesitas resolverlo durante esta práctica. Si te resulta difícil observarlo, vuelve al contacto de tus manos o a los sonidos del lugar.
 
-## 10 El espacio entre pensamientos (silencio 70 s)
-Ahora, en lugar de mirar cada pensamiento, presta atención al espacio donde aparecen. A veces un pensamiento termina y el siguiente tarda un poco en llegar. No intentes provocar ese espacio ni alargarlo. Si lo notas, descansa en él. Si no, sigue observando lo que venga. Practícalo en silencio.
+## 10 Volver a lo sencillo (silencio 65 s)
+Durante un momento, deja de poner nombre a lo que piensas. Siente tus manos o escucha los sonidos del lugar. Los pensamientos pueden continuar mientras atiendes a algo sencillo. No necesitas esperar a que la mente se calle. Me quedaré en silencio mientras practicas.
 
-## 11 La esfera violeta (silencio 40 s)
-Si te ayuda, imagina una esfera de luz violeta, tranquila, flotando un poco por encima de tu cabeza. No hace nada. Solo ilumina con suavidad, y bajo su luz los pensamientos se ven con más claridad, sin volverse más fuertes. No necesitas ver la imagen con claridad. Si imaginarla no te ayuda, puedes seguir escuchando los sonidos o sintiendo el apoyo.
+## 11 La esfera violeta (silencio 35 s)
+Si te ayuda, imagina una esfera de luz violeta, tranquila, flotando un poco por encima de tu cabeza. Puedes imaginar esa luz como un símbolo de curiosidad y amabilidad hacia lo que piensas. No necesita cambiar nada. No necesitas ver la imagen con claridad. Si imaginarla no te ayuda, puedes seguir escuchando los sonidos o sintiendo el apoyo.
 
-## 12 Observar (silencio 90 s)
+## 12 Observar (silencio 80 s)
 Con cada pensamiento que aparezca, puedes repetir en silencio una palabra: observo. Solo eso. Observo. Sin analizar, sin discutir con la mente. Dejo que lo que aparece se muestre y se vaya. Voy a quedarme en silencio un momento mientras practicas.
 
-## 13 Mente amplia (silencio 160 s)
-Ahora suelta la palabra. Suelta también la imagen. Deja que la mente haga lo que haga, y descansa como quien se da cuenta. Si te pierdes, vuelve a tu ancla, sin prisa. Voy a quedarme en silencio contigo un rato largo, y volveré a hablarte cuando sea momento de regresar.
+## 13a Descanso (1) (silencio 65 s)
+Ahora suelta la palabra. Suelta también la imagen. Quédate con lo que te resulte más sencillo. Puedes mantener la atención abierta o descansar en tu ancla. Si te pierdes, vuelve sin prisa. Me quedaré en silencio contigo un rato.
+
+## 13b Descanso (2) (silencio 65 s)
+Si te ayuda, nota otra vez el apoyo debajo de ti. Puedes continuar así, sin cambiar nada. Volveré a hablarte cuando sea momento de regresar.
 
 ## 14 Integración (silencio 25 s)
 Poco a poco, vuelve a sentir el cuerpo completo y el lugar donde estás. Nota cómo está tu mente ahora, sin exigir que esté de una manera especial. Tal vez esté más tranquila; tal vez siga ocupada. En ambos casos, has pasado este tiempo conociéndola un poco mejor.
@@ -56,12 +57,13 @@ Poco a poco, vuelve a sentir el cuerpo completo y el lugar donde estás. Nota c�
 ## 15 Cierre (silencio 10 s)
 Mueve con suavidad las manos y los pies. Estírate si lo deseas, y abre los ojos cuando te sientas a gusto. Durante el día, cuando un pensamiento te jale con fuerza, recuerda que puedes ponerle nombre y elegir qué hacer con él. Gracias por regalarte este tiempo.
 
+
 ---
 
 # Nivel 6 · La Conciencia Expandida — Apertura y expansión
 
 ## 01 Bienvenida (silencio 8 s)
-Te doy la bienvenida a La Conciencia Expandida, el sexto nivel de Súper Conciencia. En el nivel anterior observaste la mente. Hoy vamos a abrir la atención poco a poco: del cuerpo al lugar donde estás, y de ahí a algo más amplio. No hay una experiencia que debas alcanzar. Solo vamos a explorar con apertura. Como siempre, puedes pausar o terminar cuando lo necesites.
+Te doy la bienvenida a La Conciencia Expandida, el sexto nivel de Súper Conciencia. En el nivel anterior observaste la mente. Aquí llamamos expansión a explorar una atención más amplia: notar el cuerpo, los sonidos y el lugar donde estás, mientras sigues en contacto con tu entorno. Vamos a abrirla poco a poco. No hay una experiencia que debas alcanzar. Como siempre, puedes pausar o terminar cuando lo necesites.
 
 ## 02 Llegar (silencio 15 s)
 Acomódate en una postura en la que puedas estar un rato sin esfuerzo. Si quieres, cierra los ojos; si no, deja la mirada baja y suave. Siente el apoyo debajo de ti y permite que el cuerpo se asiente en él.
@@ -72,7 +74,7 @@ Empieza por algo cercano. Siente tu respiración tal como está, o el contacto d
 ## 04 El cuerpo completo (silencio 35 s)
 Ahora deja que la atención se abra al cuerpo entero, como un todo. No parte por parte, sino todo a la vez: el peso, la temperatura, las zonas tranquilas y las que se mueven. Quizá notes el cuerpo como un espacio lleno de sensaciones pequeñas. Solo obsérvalo.
 
-## 05 El espacio que te rodea (silencio 70 s)
+## 05 El espacio que te rodea (silencio 65 s)
 Ahora abre la atención un poco más, al espacio que rodea tu cuerpo. El aire en la piel, la distancia hasta las paredes, la luz o la oscuridad del lugar. Escucha los sonidos cercanos y los que están más lejos. Deja que tu atención sea amplia, como una habitación con las ventanas abiertas. Me quedaré en silencio mientras exploras.
 
 ## 06 Si te sientes disperso (silencio 25 s)
@@ -81,23 +83,26 @@ Puede que, al abrir la atención, te sientas un poco disperso o que la mente se 
 ## 07 El cielo (silencio 40 s)
 Si te ayuda, imagina el cielo sobre el lugar donde estás. Muy amplio, sin bordes. Las nubes, los sonidos, los pensamientos y las sensaciones pueden pasar por él, y el cielo sigue siendo cielo. No necesitas ver la imagen con claridad. Si imaginarla no te ayuda, puedes seguir escuchando los sonidos o sintiendo el apoyo.
 
-## 08 Todo aparece en la conciencia (silencio 65 s)
-Ahora no elijas nada en especial. Deja que la atención reciba lo que llegue: un sonido, una sensación, un pensamiento, una emoción. Cada cosa aparece, se queda un momento y se va. Nota que todo eso aparece en tu conciencia, y que tu conciencia tiene espacio para todo. Practícalo en silencio.
+## 08 Notar lo que aparece (silencio 65 s)
+Ahora no elijas nada en especial. Quizá notes un sonido, una sensación, un pensamiento o una emoción. Cada cosa aparece, se queda un momento y se va. Puedes notar lo que aparece, sin tener que atenderlo todo a la vez. Si algo resulta demasiado intenso, elige un sonido del lugar, siente el apoyo debajo de ti o abre los ojos. Tú eliges cuánto explorar. Practícalo en silencio.
 
-## 09 Quien se da cuenta (silencio 30 s)
-Por un momento, nota que hay algo en ti que se da cuenta de todo lo que aparece. No es un pensamiento ni una sensación. Es la capacidad misma de darte cuenta. No tienes que entenderlo. Solo puedes descansar en ello, como quien descansa en su propia casa.
+## 09 Darte cuenta (silencio 30 s)
+Por un momento, reconoce algo sencillo: puedes notar que estás escuchando, sintiendo o pensando. No necesitas encontrar quién observa ni resolver ninguna pregunta. Puedes seguir aquí, sintiendo el apoyo del cuerpo y escuchando lo que te rodea.
 
-## 10 La conexión (silencio 50 s)
+## 10 La conexión (silencio 46 s)
 Si te parece bien, piensa en que, en este mismo momento, muchas otras personas también respiran, sienten y buscan estar en paz, igual que tú. Puedes desearles en silencio: que estén bien. Y desearte lo mismo a ti. Si hoy no te nace, no hace falta. Puedes seguir descansando en la amplitud del espacio o en el apoyo de tu cuerpo.
 
 ## 11 La esfera plateada (silencio 40 s)
-Si te ayuda, imagina una esfera de luz plateada y suave en el centro de tu pecho. Con cada vez que el aire sale, su luz se abre un poco más allá de tu cuerpo, hacia el espacio que te rodea, sin esfuerzo y sin límite. No necesitas ver la imagen con claridad. Si imaginarla no te ayuda, puedes seguir sintiendo tus manos o escuchando los sonidos.
+Si te ayuda, imagina una esfera de luz plateada y suave en el centro de tu pecho. Cada vez que el aire sale, su luz se abre un poco más allá de tu cuerpo, hacia el espacio que te rodea, sin esfuerzo y hasta donde te resulte agradable. No necesitas ver la imagen con claridad. Si imaginarla no te ayuda, puedes seguir sintiendo tus manos o escuchando los sonidos.
 
-## 12 Apertura (silencio 90 s)
+## 12 Apertura (silencio 80 s)
 Con cada respiración, puedes repetir en silencio una palabra. Al salir el aire: apertura. Solo eso. Apertura. No como algo que haya que lograr, sino como una invitación a dejar espacio. Voy a quedarme en silencio un momento mientras practicas.
 
-## 13 Conciencia abierta (silencio 160 s)
-Ahora suelta la palabra. Suelta la imagen. Quédate simplemente abierto, sin elegir nada, dejando que todo aparezca y se vaya. Si te pierdes, vuelve a tu centro y desde ahí vuelve a abrir. Voy a quedarme en silencio contigo un rato largo, y volveré a hablarte cuando sea momento de regresar.
+## 13a Descanso (1) (silencio 68 s)
+Ahora suelta la palabra. Suelta la imagen. Quédate con lo que te resulte más sencillo. Puedes mantener la atención abierta o descansar en tu centro. Si te pierdes, vuelve sin prisa. Me quedaré en silencio contigo un rato.
+
+## 13b Descanso (2) (silencio 68 s)
+Si te ayuda, nota otra vez el apoyo debajo de ti. Puedes continuar así, sin cambiar nada. Volveré a hablarte cuando sea momento de regresar.
 
 ## 14 Integración (silencio 25 s)
 Poco a poco, deja que la atención vuelva a tu centro: la respiración, las manos, el apoyo. Siente el cuerpo completo y el lugar donde estás. Nota cómo te sientes ahora, sin exigir un cambio. Lo que hayas experimentado, o no, está bien.

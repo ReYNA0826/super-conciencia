@@ -111,6 +111,8 @@ export const SESSIONS: RecordedSession[] = [
   // Niveles 2–4: guiones en docs/guiones/niveles-2-3-4-borrador.md (es) y niveles-2-3-4-en.md (en),
   // aprobados por Reyna el 14-nov. Silencios ajustados tras medir los audios para llegar a ~16 min.
   ...LEVELS_2_TO_4(),
+  // Niveles 5 y 6 (suscripción): guiones v2 con correcciones de Reyna del 15-nov.
+  ...LEVELS_5_TO_6(),
 ];
 
 type Caption = [es: string, en: string, silence: number];
@@ -217,4 +219,51 @@ export function getSession(id: string): RecordedSession | undefined {
 /** La meditación grabada de un nivel del recorrido, si ya existe. */
 export function sessionForLevel(level: number): RecordedSession | undefined {
   return SESSIONS.find((s) => s.level === level);
+}
+
+function LEVELS_5_TO_6(): RecordedSession[] {
+  return [
+    levelSession(5, 'nivel-5', ['La Mente Profunda', 'The Deep Mind'], [
+      'Mirar la mente con calma: los pensamientos, las imágenes y las emociones que pasan por ella.',
+      'Looking at the mind calmly: the thoughts, images and emotions that pass through it.',
+    ], [
+      ['Bienvenida. No se trata de dejar la mente en blanco.', "Welcome. This isn't about emptying the mind.", 8],
+      ['Acomódate y siente el apoyo debajo de ti.', 'Settle in and feel the support beneath you.', 15],
+      ['Elige un ancla: respiración, manos o apoyo.', 'Choose an anchor: breath, hands or support.', 30],
+      ['La mente se mueve. No es un error.', "The mind moves. It isn't a mistake.", 30],
+      ['Ponle un nombre corto a cada pensamiento.', 'Give each thought a short name.', 65],
+      ['Si te enredas, solo nota: estaba pensando.', 'If you get tangled, just note: I was thinking.', 25],
+      ['Las nubes (opcional).', 'Clouds (optional).', 40],
+      ['Si te resulta cómodo, nota la emoción en el cuerpo.', 'If it feels comfortable, notice the emotion in the body.', 60],
+      ['Puedes notar un pensamiento sin responder de inmediato.', 'You can notice a thought without responding right away.', 27],
+      ['Vuelve a lo sencillo: tus manos o los sonidos.', 'Back to something simple: your hands or the sounds.', 65],
+      ['La esfera violeta (opcional).', 'The violet sphere (optional).', 35],
+      ['Con cada pensamiento: «observo».', 'With each thought: “observing.”', 80],
+      ['Descanso. Atención abierta o tu ancla.', 'Rest. Open attention or your anchor.', 65],
+      ['Nota otra vez el apoyo debajo de ti.', 'Notice the support beneath you once more.', 65],
+      ['Nota cómo está tu mente ahora.', 'Notice how your mind is now.', 25],
+      ['Ponle nombre y elige qué hacer. Gracias.', 'Name it and choose what to do. Thank you.', 10],
+    ]),
+    levelSession(6, 'nivel-6', ['La Conciencia Expandida', 'Expanded Awareness'], [
+      'Abrir la atención poco a poco: el cuerpo, los sonidos y el lugar donde estás.',
+      'Opening attention little by little: your body, the sounds and the place where you are.',
+    ], [
+      ['Bienvenida. Expansión es una atención más amplia.', 'Welcome. Expansion means a wider attention.', 8],
+      ['Acomódate y siente el apoyo debajo de ti.', 'Settle in and feel the support beneath you.', 15],
+      ['Tu centro: la respiración o las manos.', 'Your center: the breath or the hands.', 30],
+      ['El cuerpo completo, todo a la vez.', 'The whole body, all at once.', 35],
+      ['El espacio que te rodea y sus sonidos.', 'The space around you and its sounds.', 65],
+      ['Si te sientes disperso, vuelve a tu centro.', 'If you feel scattered, come back to your center.', 25],
+      ['El cielo (opcional).', 'The sky (optional).', 40],
+      ['Nota lo que aparece. Tú eliges cuánto explorar.', 'Notice what appears. You choose how much to explore.', 65],
+      ['Puedes notar que estás escuchando, sintiendo o pensando.', 'You can notice that you are listening, feeling or thinking.', 30],
+      ['La conexión (opcional): que estén bien.', 'Connection (optional): may you be well.', 46],
+      ['La esfera plateada (opcional).', 'The silver sphere (optional).', 40],
+      ['Al salir el aire: «apertura».', 'As the air goes out: “openness.”', 80],
+      ['Descanso. Atención abierta o tu centro.', 'Rest. Open attention or your center.', 68],
+      ['Nota otra vez el apoyo debajo de ti.', 'Notice the support beneath you once more.', 68],
+      ['Vuelve a tu centro. Nota cómo te sientes.', 'Return to your center. Notice how you feel.', 25],
+      ['Recuerda el cielo durante tu día. Gracias.', 'Remember the sky during your day. Thank you.', 10],
+    ]),
+  ];
 }

@@ -13,7 +13,7 @@ import subprocess
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VOZ = os.path.join(ROOT, "store-assets", "voz")
 # carpeta de los originales -> id de la sesión en la app (y en el bucket)
-SESSIONS = {"nivel-1": "nivel-1", "nivel-2": "nivel-2", "nivel-3": "nivel-3", "nivel-4": "nivel-4",
+SESSIONS = {"nivel-1": "nivel-1", "nivel-2": "nivel-2", "nivel-3": "nivel-3", "nivel-4": "nivel-4", "nivel-5": "nivel-5", "nivel-6": "nivel-6",
             "un-espacio-para-cuidarme": "cuidarme"}
 VERSIONS = ["es-f", "es-m", "en-f", "en-m"]
 
