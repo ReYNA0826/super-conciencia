@@ -9,7 +9,7 @@ import {
 import { buyEncounter, hasTier, loadEncounterProduct, requirePlan, showPlans, useTier } from '../lib/billing';
 import { pauseAmbient, resumeAmbient, startAmbient, stopAmbient } from '../lib/ambient';
 import { buildSanctuarySession } from '../data/sanctuary';
-import { guruConfigured, startGuru, type GuruSession, type GuruStatus } from '../lib/guru';
+import { GuruLimitError, guruConfigured, startGuru, type GuruSession, type GuruStatus } from '../lib/guru';
 import { FREE_PRESET, SESSIONS } from '../data/sessions';
 import {
   DURATIONS, GOALS, MUSICS, MUSIC_LABEL, VOICES,
@@ -48,6 +48,7 @@ export default function Sanctuary({ userId, onBack, onComplete, onOpenSession }:
   const [playing, setPlaying] = useState(true);
   const [guruStatus, setGuruStatus] = useState<GuruStatus | null>(null);
   const [guruNote, setGuruNote] = useState(false);
+  const [guruLimit, setGuruLimit] = useState(false);
   const guru = useRef<GuruSession | null>(null);
   const guruRun = useRef(0);
 
@@ -94,12 +95,15 @@ export default function Sanctuary({ userId, onBack, onComplete, onOpenSession }:
   const payEncounter = async (g: Gathering) => {
     setRegBusy(true);
     setRegMsg(null);
+    // Si ya hay un pago confirmado sin usar (por ejemplo, de un intento anterior), se usa ese: no se cobra otra vez.
+    if (await registerPaid(g.id, 1)) { setRegBusy(false); markRegistered(g.id); return; }
     const product = await loadEncounterProduct();
     if (!product) { setRegBusy(false); setRegMsg(t('plansOnlyInApp')); return; }
-    const { result, transactionId } = await buyEncounter(product);
-    const ok = result === 'ok' && transactionId ? await registerPaid(g.id, transactionId) : false;
+    const { result } = await buyEncounter(product);
+    const ok = result === 'ok' ? await registerPaid(g.id) : false;
     setRegBusy(false);
     if (ok) markRegistered(g.id);
+    else if (result === 'ok') setRegMsg(t('encounterPayPending'));
     else if (result !== 'cancelled') setRegMsg(t('encounterPayError'));
   };
   /** Unirse al encuentro en curso: solo con registro; si no, lleva al calendario a registrarse. */
@@ -200,8 +204,9 @@ export default function Sanctuary({ userId, onBack, onComplete, onOpenSession }:
       });
       if (guruRun.current !== run) { void session.end().catch(() => undefined); return; }
       guru.current = session;
-    } catch {
-      if (guruRun.current === run) setGuruStatus('error');
+    } catch (e) {
+      if (guruRun.current !== run) return;
+      if (e instanceof GuruLimitError) { setGuruLimit(true); setStep('consent'); } else setGuruStatus('error');
     }
   };
 
@@ -229,7 +234,7 @@ export default function Sanctuary({ userId, onBack, onComplete, onOpenSession }:
           <div style={stack}>
             <button className="sc-btn" onClick={() => (liveNow ? joinLive() : setStep('setup'))}>{liveNow ? t('gatheringJoin') : t('enterMeditation')}</button>
             <button className="sc-btn" onClick={() => setStep('library')}>{t('guruSessions')}</button>
-            <button className="sc-btn" onClick={() => requirePlan('guru', () => { setGuruNote(false); setStep('consent'); })}>{t('talkToGuru')}</button>
+            <button className="sc-btn" onClick={() => requirePlan('guru', () => { setGuruNote(false); setGuruLimit(false); setStep('consent'); })}>{t('talkToGuru')}</button>
             <button className="sc-btn" onClick={() => setStep('calendar')}>{t('gatherings')}</button>
           </div>
         </Panel>
@@ -297,6 +302,7 @@ export default function Sanctuary({ userId, onBack, onComplete, onOpenSession }:
             <button className="sc-btn" onClick={activateVoice}>{t('activateVoice')}</button>
           </div>
           {guruNote && <span style={note}>{t('guruNotReady')}</span>}
+          {guruLimit && <p style={{ ...body, opacity: 0.95 }} role="status">{t('guruNoMinutes')}</p>}
           <button style={quiet} onClick={() => setStep('entry')}>{t('notNow')}</button>
         </Panel>
       )}

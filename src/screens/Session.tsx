@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n/LanguageContext';
 import type { StringKey } from '../i18n/strings';
 import {
-  FREE_PRESET, getSession, sessionAudioUrls, sessionMinutes, sessionSilences, sessionVoiceSeconds, versionOf,
+  FREE_PRESET, getSession, isPremiumAudio, premiumAudioUrls, sessionAudioUrls, sessionMinutes, sessionSilences, sessionVoiceSeconds, versionOf,
 } from '../data/sessions';
 import { hasTier, showPlans, useTier } from '../lib/billing';
 import { createSessionPlayer, type PlayerSnapshot, type SessionPlayer } from '../lib/sessionPlayer';
@@ -69,6 +69,15 @@ export default function Session({ sessionId, onClose, onComplete }: Props) {
   const music = free ? FREE_PRESET.music : prefs.music;
   const guide = free ? FREE_PRESET.guide : player.guide;
   const version = versionOf(lang, voice);
+  // Audios Premium: se piden por adelantado las direcciones firmadas del bucket privado, para
+  // tenerlas listas cuando la persona toque «Comenzar» (el toque no puede esperar a la red).
+  const signed = useRef<{ version: string; urls: string[] } | null>(null);
+  useEffect(() => {
+    if (!session || !isPremiumAudio(session)) return;
+    let alive = true;
+    void premiumAudioUrls(session, version).then((urls) => { if (alive && urls) signed.current = { version, urls }; });
+    return () => { alive = false; };
+  }, [session, version]);
   const minutes = useMemo(
     () => (session ? sessionMinutes(session, version, guide) : 0),
     [session, version, guide],
@@ -110,7 +119,7 @@ export default function Session({ sessionId, onClose, onComplete }: Props) {
     early.current = false;
     setEndedEarly(false);
     const created = createSessionPlayer({
-      urls: sessionAudioUrls(session, version),
+      urls: signed.current?.version === version ? signed.current.urls : sessionAudioUrls(session, version),
       durations: sessionVoiceSeconds(session, version),
       silences: sessionSilences(session, guide),
       voiceVolume: player.voiceVolume,

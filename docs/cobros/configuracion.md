@@ -50,14 +50,29 @@ El límite de Gurú se activa en ElevenLabs el mismo día que salga la versión 
      - `VITE_REVENUECAT_ANDROID_KEY=goog_...`
 5. Compilar (`npx cap sync`) y probar con una cuenta *sandbox* de Apple y un verificador de licencias de Google.
 
-## Pendiente antes de abrir el cobro al público
-- **Límite de minutos con Gurú:** hoy la app conecta directo con el agente de ElevenLabs. Hay que pasar por una función de Supabase que:
-  - compruebe que la persona tiene la Premium con Gurú,
-  - cuente sus minutos del mes,
-  - entregue un enlace firmado, y en ElevenLabs activar que el agente exija autenticación.
-  Sin esto, el costo de Gurú no tiene techo.
-- **Comprobar el pago de los encuentros** contra RevenueCat (webhook) en lugar de confiar en el id de transacción que manda la app.
-- **Bucket de meditaciones:** pasarlo a privado con URLs firmadas, para que los niveles 5 y 6 no se puedan descargar sin suscripción.
+## Protecciones del servidor (construidas el 15-nov-2026)
+Todo vive en Supabase. La app nunca puede darse acceso a sí misma.
+
+| Pieza | Qué hace |
+|---|---|
+| Función `revenuecat-webhook` | Recibe de RevenueCat cada compra, renovación y vencimiento. Escribe `subscriptions` (plan y fecha de vencimiento) y `purchase_credits` (encuentros pagados). |
+| Función `guru-session` | Comprueba el plan «Premium con Gurú», cuenta los minutos del mes (20) y entrega un pase de un solo uso de ElevenLabs. Mide el tiempo en el servidor; una sesión que la app no cierra se cobra completa. |
+| RPC `register_gathering_paid(gathering)` | Registra a la persona en un encuentro consumiendo un pago confirmado. Sin pago confirmado, no registra. |
+| Bucket privado `premium` | Audios de los niveles 5 y 6. Solo los lee quien tiene una suscripción vigente (URLs firmadas de 2 h). |
+
+Probado en la base el 15-nov: sin suscripción 0 audios, con suscripción 128, vencida 0; encuentro sin pago no registra, con pago sí, y un pago no sirve para dos encuentros; minutos de Gurú suman bien.
+
+### Secretos que faltan (los pega Reyna en Supabase → Edge Functions → Secrets)
+- `REVENUECAT_WEBHOOK_SECRET`: una frase larga inventada; la misma se pone en RevenueCat → Integrations → Webhooks → Authorization header. URL del webhook: `https://qtofeecosgawmqhwagyv.supabase.co/functions/v1/revenuecat-webhook`
+- `ELEVENLABS_API_KEY` y `ELEVENLABS_AGENT_ID`: para los pases de Gurú.
+
+Mientras falten, las funciones responden `not_configured` y la app sigue como antes (Gurú conecta directo y los audios salen del bucket público).
+
+### El día del lanzamiento (en este orden)
+1. Pegar los tres secretos y crear el webhook en RevenueCat. Hacer una compra de prueba y ver la fila en `subscriptions`.
+2. En ElevenLabs → agente Gurú → Seguridad: activar «Requerir autenticación». Desde ese momento Gurú solo responde con pase del servidor (las betas viejas dejan de conectar).
+3. Borrar del bucket público `meditaciones` las carpetas `nivel-5/` y `nivel-6/`.
+4. Compilar la versión de tienda SIN `VITE_BETA_TIER`.
 
 ## Precios de referencia (consultados el 15-nov-2026, en USD)
 | App | Mensual | Anual |

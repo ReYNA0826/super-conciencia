@@ -11,6 +11,7 @@
  * Guiones: docs/guiones (nivel 1) y docs/agente (Gurú). Duraciones medidas de los audios:
  * sessionDurations.ts, que se genera con scripts/medir-audios.py.
  */
+import { supabase } from '../lib/supabase';
 import type { Lang } from '../i18n/strings';
 import type { MusicChoice, VoiceChoice } from '../lib/prefs';
 import { GUIDE_FACTOR, type GuideMode } from '../lib/sessionStore';
@@ -50,6 +51,23 @@ export const recordedSessionsAvailable = Boolean(STORAGE);
 export function sessionAudioUrls(session: RecordedSession, version: SessionVersion): string[] {
   return session.blocks.map((_, i) =>
     `${STORAGE}/storage/v1/object/public/meditaciones/${session.id}/${version}/${String(i + 1).padStart(2, '0')}.m4a`);
+}
+
+/** Sesiones cuyos audios son de pago: viven también en el bucket privado `premium`. */
+export function isPremiumAudio(session: RecordedSession): boolean {
+  return session.level === 5 || session.level === 6;
+}
+
+/**
+ * Direcciones firmadas (2 h) de los audios Premium. El servidor solo las entrega a quien tiene
+ * una suscripción vigente. Devuelve null si no se pudo (sin cuenta, sin conexión…).
+ */
+export async function premiumAudioUrls(session: RecordedSession, version: SessionVersion): Promise<string[] | null> {
+  if (!supabase) return null;
+  const paths = session.blocks.map((_, i) => `${session.id}/${version}/${String(i + 1).padStart(2, '0')}.m4a`);
+  const { data, error } = await supabase.storage.from('premium').createSignedUrls(paths, 7200);
+  if (error || !data || data.length !== paths.length || data.some((d) => !d.signedUrl)) return null;
+  return data.map((d) => d.signedUrl as string);
 }
 
 /** Duración medida de cada audio de voz; si falta alguna, se estima en 50 s. */

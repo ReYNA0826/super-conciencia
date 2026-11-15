@@ -76,8 +76,17 @@ export async function registerWithCode(gatheringId: string, code: string): Promi
   return !error && data === true;
 }
 
-export async function registerPaid(gatheringId: string, transactionId: string): Promise<boolean> {
+/**
+ * Registro por pago: el servidor solo lo acepta cuando la tienda confirmó la compra (aviso de
+ * RevenueCat), y eso puede tardar unos segundos; por eso se reintenta un rato.
+ * También sirve para usar una compra confirmada que quedó sin registrar.
+ */
+export async function registerPaid(gatheringId: string, attempts = 8): Promise<boolean> {
   if (!supabase) return false;
-  const { data, error } = await supabase.rpc('register_gathering_paid', { p_gathering: gatheringId, p_transaction: transactionId });
-  return !error && data === true;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const { data, error } = await supabase.rpc('register_gathering_paid', { p_gathering: gatheringId });
+    if (!error && data === true) return true;
+    if (attempt < attempts - 1) await new Promise((r) => setTimeout(r, 2500));
+  }
+  return false;
 }
