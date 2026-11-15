@@ -1,3 +1,4 @@
+import { hasTier, useTier } from '../lib/billing';
 import { useLang } from '../i18n/LanguageContext';
 import { LEVELS } from '../data/levels';
 
@@ -17,6 +18,8 @@ type Props = {
  */
 export default function Universe({ completed, unlocked, onOpenLevel, onOpenPortal }: Props) {
   const { lang, t } = useLang();
+  const tier = useTier();
+  const needsPlan = (id: number) => (id === 5 || id === 6) && !hasTier(tier, 'plus');
 
   return (
     <div style={{ position: 'relative', height: '100%' }}>
@@ -52,7 +55,7 @@ export default function Universe({ completed, unlocked, onOpenLevel, onOpenPorta
                 <div style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 7, color: isDone ? lvl.color : 'var(--ink)', opacity: isDone ? 1 : 0.55 }}>
                   {isFinal
                     ? t(locked ? 'sealed' : 'open')
-                    : isDone ? `✓ ${t('statusDone')}` : t('statusAvailable')}
+                    : isDone ? `✓ ${t('statusDone')}` : needsPlan(lvl.id) ? t('lockedPlus') : t('statusAvailable')}
                 </div>
               </button>
             );

@@ -13,16 +13,17 @@ type Props = {
   onComplete: () => void;
   /** Abre una meditación grabada en el reproductor. */
   onOpenSession: (id: string) => void;
+  userId: string | null;
 };
 
-export default function Portal({ unlocked, signedIn, onRedeemed, onBack, onComplete, onOpenSession }: Props) {
+export default function Portal({ unlocked, signedIn, userId, onRedeemed, onBack, onComplete, onOpenSession }: Props) {
   const { t } = useLang();
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   // Portal abierto: el Santuario del Éter (entrada, meditación, conversación con Gurú).
-  if (unlocked) return <Sanctuary onBack={onBack} onComplete={onComplete} onOpenSession={onOpenSession} />;
+  if (unlocked) return <Sanctuary userId={userId} onBack={onBack} onComplete={onComplete} onOpenSession={onOpenSession} />;
 
   const redeem = async (e: React.FormEvent) => {
     e.preventDefault();

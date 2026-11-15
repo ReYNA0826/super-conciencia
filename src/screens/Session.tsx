@@ -2,8 +2,9 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n/LanguageContext';
 import type { StringKey } from '../i18n/strings';
 import {
-  FREE_PRESET, getSession, isFreeSession, sessionAudioUrls, sessionMinutes, sessionSilences, sessionVoiceSeconds, versionOf,
+  FREE_PRESET, getSession, sessionAudioUrls, sessionMinutes, sessionSilences, sessionVoiceSeconds, versionOf,
 } from '../data/sessions';
+import { hasTier, showPlans, useTier } from '../lib/billing';
 import { createSessionPlayer, type PlayerSnapshot, type SessionPlayer } from '../lib/sessionPlayer';
 import {
   GUIDES, clearResume, loadFavorites, loadPlayerPrefs, loadResume, savePlayerPrefs, saveResume, toggleFavorite,
@@ -61,8 +62,9 @@ export default function Session({ sessionId, onClose, onComplete }: Props) {
   const lastSave = useRef(0);
   const wake = useRef<WakeLock | null>(null);
 
-  // Niveles gratis: voz, música y guía fijas (sin selector). Suscripción: lo que elija la persona.
-  const free = isFreeSession(session);
+  // Sin suscripción: voz, música y guía fijas (sin selector). Con ella: lo que elija la persona,
+  // también en los niveles 1–4.
+  const free = !hasTier(useTier(), 'plus');
   const voice = free ? FREE_PRESET.voice : prefs.voice;
   const music = free ? FREE_PRESET.music : prefs.music;
   const guide = free ? FREE_PRESET.guide : player.guide;
@@ -240,7 +242,9 @@ export default function Session({ sessionId, onClose, onComplete }: Props) {
           <p style={about}>{session.about[lang]}</p>
 
           {free ? (
-            <span style={note}>{t('freePresetNote')}</span>
+            <button type="button" style={{ ...note, background: 'none', border: 'none', color: 'var(--ink)' }} onClick={() => showPlans('plus')}>
+              {t('freePresetNote')} · {t('seePlans')}
+            </button>
           ) : (<>
           <Row label={t('sessionGuide')}>
             {GUIDES.map((g) => (

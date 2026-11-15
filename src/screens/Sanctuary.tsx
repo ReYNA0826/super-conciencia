@@ -3,11 +3,14 @@ import { useLang } from '../i18n/LanguageContext';
 import type { StringKey } from '../i18n/strings';
 import { setParticipants, setSanctuaryState } from '../lib/sceneBridge';
 import { joinSanctuary } from '../lib/presence';
-import { formatGathering, isLive, loadUpcomingGatherings, type Gathering } from '../lib/gatherings';
+import {
+  formatGathering, isLive, loadMyRegistrations, loadUpcomingGatherings, registerPaid, registerWithCode, type Gathering,
+} from '../lib/gatherings';
+import { buyEncounter, hasTier, loadEncounterProduct, requirePlan, showPlans, useTier } from '../lib/billing';
 import { pauseAmbient, resumeAmbient, startAmbient, stopAmbient } from '../lib/ambient';
 import { buildSanctuarySession } from '../data/sanctuary';
 import { guruConfigured, startGuru, type GuruSession, type GuruStatus } from '../lib/guru';
-import { SESSIONS } from '../data/sessions';
+import { FREE_PRESET, SESSIONS } from '../data/sessions';
 import {
   DURATIONS, GOALS, MUSICS, MUSIC_LABEL, VOICES,
   loadSanctuaryPrefs, saveSanctuaryPrefs,
@@ -25,7 +28,7 @@ import {
  */
 type Step = 'entry' | 'setup' | 'meditating' | 'consent' | 'guru' | 'closing' | 'calendar' | 'library';
 
-type Props = { onBack: () => void; onComplete: () => void; onOpenSession: (id: string) => void };
+type Props = { userId: string | null; onBack: () => void; onComplete: () => void; onOpenSession: (id: string) => void };
 
 const VOICE_LABEL: Record<VoiceChoice, StringKey> = { female: 'voiceFemale', male: 'voiceMale' };
 const GOAL_LABEL: Record<GoalChoice, StringKey> = {
@@ -35,8 +38,10 @@ const GURU_LABEL: Partial<Record<GuruStatus, StringKey>> = {
   connecting: 'guruConnecting', listening: 'guruListening', speaking: 'guruSpeaking', error: 'guruError',
 };
 
-export default function Sanctuary({ onBack, onComplete, onOpenSession }: Props) {
+export default function Sanctuary({ userId, onBack, onComplete, onOpenSession }: Props) {
   const { lang, t } = useLang();
+  // Elegir voz y música es de la suscripción; sin ella suena la música predeterminada.
+  const canChoose = hasTier(useTier(), 'plus');
   const [step, setStep] = useState<Step>('entry');
   const [prefs, setPrefs] = useState<SanctuaryPrefs>(loadSanctuaryPrefs);
   const [elapsed, setElapsed] = useState(0);
@@ -68,6 +73,42 @@ export default function Sanctuary({ onBack, onComplete, onOpenSession }: Props) 
   }, []);
   const upcoming = gatherings.filter((g) => g.startsAt.getTime() + g.minutes * 60_000 > now);
   const liveNow = upcoming.find((g) => isLive(g, now)) ?? null;
+
+  // Encuentros astrales: entra quien se registró con un código de invitación o pagando el evento.
+  const [registered, setRegistered] = useState<Set<string>>(new Set());
+  const [openReg, setOpenReg] = useState<string | null>(null);
+  const [regCode, setRegCode] = useState('');
+  const [regMsg, setRegMsg] = useState<string | null>(null);
+  const [regBusy, setRegBusy] = useState(false);
+  const [encounterPrice, setEncounterPrice] = useState<string | null>(null);
+  useEffect(() => { void loadMyRegistrations(userId).then(setRegistered); }, [userId]);
+  useEffect(() => { void loadEncounterProduct().then((p) => setEncounterPrice(p?.priceString ?? null)); }, []);
+  const markRegistered = (id: string) => { setRegistered((prev) => new Set(prev).add(id)); setOpenReg(null); setRegMsg(null); };
+
+  const submitRegCode = async (g: Gathering) => {
+    setRegBusy(true);
+    const ok = await registerWithCode(g.id, regCode);
+    setRegBusy(false);
+    if (ok) markRegistered(g.id); else setRegMsg(t('encounterCodeWrong'));
+  };
+  const payEncounter = async (g: Gathering) => {
+    setRegBusy(true);
+    setRegMsg(null);
+    const product = await loadEncounterProduct();
+    if (!product) { setRegBusy(false); setRegMsg(t('plansOnlyInApp')); return; }
+    const { result, transactionId } = await buyEncounter(product);
+    const ok = result === 'ok' && transactionId ? await registerPaid(g.id, transactionId) : false;
+    setRegBusy(false);
+    if (ok) markRegistered(g.id);
+    else if (result !== 'cancelled') setRegMsg(t('encounterPayError'));
+  };
+  /** Unirse al encuentro en curso: solo con registro; si no, lleva al calendario a registrarse. */
+  const joinLive = () => {
+    if (liveNow && registered.has(liveNow.id)) { setStep('setup'); return; }
+    setOpenReg(liveNow?.id ?? null);
+    setRegMsg(t('encounterNeedRegister'));
+    setStep('calendar');
+  };
   const gatheringLine = liveNow ? t('gatheringLive')
     : upcoming[0] ? t('gatheringNext').replace('{when}', formatGathering(upcoming[0], lang))
       : null;
@@ -107,7 +148,7 @@ export default function Sanctuary({ onBack, onComplete, onOpenSession }: Props) 
     setElapsed(0);
     setPlaying(true);
     setStep('meditating');
-    startAmbient(prefs.music); // dentro del toque: los teléfonos lo exigen para sonar
+    startAmbient(canChoose ? prefs.music : FREE_PRESET.music); // dentro del toque: los teléfonos lo exigen para sonar
   };
 
   const togglePlaying = () => {
@@ -186,9 +227,9 @@ export default function Sanctuary({ onBack, onComplete, onOpenSession }: Props) 
           {presenceLine && <span style={{ ...note, color: 'var(--gold)', opacity: 0.85 }} role="status">{presenceLine}</span>}
           {gatheringLine && <span style={{ ...note, marginTop: 4, opacity: 0.85 }}>{gatheringLine}</span>}
           <div style={stack}>
-            <button className="sc-btn" onClick={() => setStep('setup')}>{liveNow ? t('gatheringJoin') : t('enterMeditation')}</button>
+            <button className="sc-btn" onClick={() => (liveNow ? joinLive() : setStep('setup'))}>{liveNow ? t('gatheringJoin') : t('enterMeditation')}</button>
             <button className="sc-btn" onClick={() => setStep('library')}>{t('guruSessions')}</button>
-            <button className="sc-btn" onClick={() => { setGuruNote(false); setStep('consent'); }}>{t('talkToGuru')}</button>
+            <button className="sc-btn" onClick={() => requirePlan('guru', () => { setGuruNote(false); setStep('consent'); })}>{t('talkToGuru')}</button>
             <button className="sc-btn" onClick={() => setStep('calendar')}>{t('gatherings')}</button>
           </div>
         </Panel>
@@ -202,6 +243,7 @@ export default function Sanctuary({ onBack, onComplete, onOpenSession }: Props) 
               <Chip key={m} on={prefs.minutes === m} onClick={() => update({ minutes: m })}>{m} min</Chip>
             ))}
           </Row>
+          {canChoose ? (<>
           <Row label={t('voice')}>
             {VOICES.map((v) => (
               <Chip key={v} on={prefs.voice === v} onClick={() => update({ voice: v })}>{t(VOICE_LABEL[v])}</Chip>
@@ -212,6 +254,9 @@ export default function Sanctuary({ onBack, onComplete, onOpenSession }: Props) 
               <Chip key={m} on={prefs.music === m} onClick={() => update({ music: m })}>{t(MUSIC_LABEL[m])}</Chip>
             ))}
           </Row>
+          </>) : (
+            <button type="button" style={{ ...quiet, marginTop: 10 }} onClick={() => showPlans('plus')}>{t('freePresetNote')} · {t('seePlans')}</button>
+          )}
           <Row label={t('goal')}>
             {GOALS.map((g) => (
               <Chip key={g} on={prefs.goal === g} onClick={() => update({ goal: g })}>{t(GOAL_LABEL[g])}</Chip>
@@ -303,6 +348,36 @@ export default function Sanctuary({ onBack, onComplete, onOpenSession }: Props) 
                       {lang === 'es' ? g.titleEs : g.titleEn} · {g.minutes} min
                     </span>
                     {live && <span style={{ ...dateMeta, color: 'var(--gold)', opacity: 1 }} role="status">{t('gatheringLive')}</span>}
+                    {registered.has(g.id) ? (
+                      <span style={{ ...dateMeta, color: 'var(--gold)', opacity: 1 }}>{t('encounterRegistered')}</span>
+                    ) : !userId ? (
+                      <span style={dateMeta}>{t('encounterNeedAccount')}</span>
+                    ) : openReg === g.id ? (
+                      <div style={regBox}>
+                        <button className="sc-btn" style={{ padding: '9px 16px', fontSize: 13 }} disabled={regBusy} onClick={() => payEncounter(g)}>
+                          {encounterPrice ? `${t('encounterPay')} · ${encounterPrice}` : t('encounterPay')}
+                        </button>
+                        <span style={dateMeta}>{t('encounterHaveCode')}</span>
+                        <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                          <input
+                            value={regCode}
+                            onChange={(e) => setRegCode(e.target.value.toUpperCase())}
+                            placeholder={t('encounterCode')}
+                            aria-label={t('encounterCode')}
+                            autoCapitalize="characters" autoCorrect="off" spellCheck={false} maxLength={40}
+                            style={codeInput}
+                          />
+                          <button type="button" className="sc-chip" disabled={regBusy || regCode.trim().length < 4} onClick={() => submitRegCode(g)}>
+                            {t('encounterUseCode')}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button type="button" className="sc-chip" style={{ alignSelf: 'center', marginTop: 6 }}
+                        onClick={() => { setOpenReg(g.id); setRegCode(''); setRegMsg(null); }}>
+                        {t('encounterRegister')}
+                      </button>
+                    )}
                   </li>
                 );
               })}
@@ -310,9 +385,10 @@ export default function Sanctuary({ onBack, onComplete, onOpenSession }: Props) 
           )}
           {liveNow && (
             <div style={stack}>
-              <button className="sc-btn" onClick={() => setStep('setup')}>{t('gatheringJoin')}</button>
+              <button className="sc-btn" onClick={joinLive}>{t('gatheringJoin')}</button>
             </div>
           )}
+          {regMsg && <p style={{ ...body, opacity: 0.95 }} role="status">{regMsg}</p>}
           {upcoming.length > 0 && <span style={note}>{t('gatheringLocalTime')}</span>}
           <button style={quiet} onClick={() => setStep('entry')}>{t('back')}</button>
         </Panel>
@@ -420,4 +496,9 @@ const homeBtn: React.CSSProperties = {
   color: 'var(--gold)',
   fontSize: 14,
   letterSpacing: '0.04em',
+};
+const regBox: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8, alignItems: 'center' };
+const codeInput: React.CSSProperties = {
+  width: 150, padding: '8px 12px', borderRadius: 999, border: '1px solid var(--panel-border)',
+  background: 'rgba(7, 10, 30, 0.6)', color: 'var(--ink)', fontSize: 13, letterSpacing: '0.08em', textAlign: 'center',
 };

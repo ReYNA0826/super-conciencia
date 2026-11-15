@@ -20,6 +20,11 @@ import { unlockAmbient } from './lib/ambient';
 import { unlockVoice } from './lib/voice';
 import { listenForAuthLinks } from './lib/authLinks';
 import { NO_INVITES, loadInviteState, type InviteState } from './lib/invitations';
+import Plans from './components/Plans';
+import { closePlans, initBilling, requirePlan, usePlansRequest } from './lib/billing';
+
+/** Niveles que necesitan la suscripción (modelo de Reyna, 14-nov: 1–4 gratis). */
+const SUBSCRIPTION_LEVELS = [5, 6];
 
 export type Screen = 'onboarding' | 'auth' | 'newPassword' | 'home' | 'universe' | 'meditation' | 'session' | 'portal' | 'profile';
 
@@ -40,6 +45,9 @@ export default function App() {
   const [authNotice, setAuthNotice] = useState(false);
 
   const userId = user?.id ?? null;
+  const plansRequest = usePlansRequest();
+  // Cobros: liga las compras a la cuenta de la persona (o a un invitado anónimo).
+  useEffect(() => { void initBilling(userId); }, [userId]);
   const unlocked = isPortalUnlocked(completed, invites.hasInvite);
   // Invitar es para quien completó los seis niveles con una cuenta (el servidor lo vuelve a comprobar).
   const canInvite = Boolean(userId) && [1, 2, 3, 4, 5, 6].every((n) => completed.includes(n));
@@ -94,6 +102,11 @@ export default function App() {
   const openLevel = (id: number) => {
     unlockAmbient(); // dentro del toque: permite que la música arranque en el teléfono
     unlockVoice(); // y también la voz guía
+    if (SUBSCRIPTION_LEVELS.includes(id)) { requirePlan('plus', () => openLevelNow(id)); return; }
+    openLevelNow(id);
+  };
+
+  const openLevelNow = (id: number) => {
     setReturnTo(screen === 'universe' ? 'universe' : 'home');
     setSelectedLevel(id);
     // Si el nivel ya tiene su meditación grabada, se abre en el reproductor completo.
@@ -192,6 +205,7 @@ export default function App() {
           <Portal
             unlocked={unlocked}
             signedIn={Boolean(userId)}
+            userId={userId}
             onRedeemed={refreshInvites}
             onBack={() => setScreen('home')}
             onComplete={() => completeLevel(7)}
@@ -211,6 +225,9 @@ export default function App() {
           />
         )}
       </main>
+      {plansRequest && (
+        <Plans need={plansRequest.need} onClose={() => closePlans(false)} onUnlocked={() => closePlans(true)} />
+      )}
       {tab && <TabBar active={tab} onSelect={(next) => setScreen(SCREEN_OF[next])} />}
     </>
   );

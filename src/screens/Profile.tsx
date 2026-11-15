@@ -8,6 +8,7 @@ import {
   MUSICS, MUSIC_LABEL, VOICES, loadSanctuaryPrefs, saveSanctuaryPrefs,
   type SanctuaryPrefs, type VoiceChoice,
 } from '../lib/prefs';
+import { billingAvailable, hasTier, restorePurchases, showPlans, useBilling } from '../lib/billing';
 
 const PRIVACY_URL = 'https://dreameducationus.com/super-conciencia-privacidad/';
 
@@ -30,6 +31,8 @@ export default function Profile({
   completed, unlocked, user, invites, canInvite, onInvitesChanged, onSignOut, onDeleted,
 }: Props) {
   const { lang, setLang, t } = useLang();
+  const billing = useBilling();
+  const canChoose = hasTier(billing.tier, 'plus');
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -99,7 +102,7 @@ export default function Profile({
                 {lang === 'es' ? lvl.es : lvl.en}
               </span>
               <span style={{ marginLeft: 'auto', fontSize: 10.5, letterSpacing: '0.06em', opacity: 0.75 }}>
-                {isFinal ? t(unlocked ? 'open' : 'sealed') : done ? `✓ ${t('statusDone')}` : t('statusAvailable')}
+                {isFinal ? t(unlocked ? 'open' : 'sealed') : done ? `✓ ${t('statusDone')}` : (lvl.id === 5 || lvl.id === 6) && !canChoose ? t('lockedPlus') : t('statusAvailable')}
               </span>
             </div>
           );
@@ -118,10 +121,28 @@ export default function Profile({
       </section>
 
       <section className="sc-panel" style={{ padding: 18, width: '100%', maxWidth: 420, marginTop: 14 }}>
-        <h3 style={{ fontSize: 13, letterSpacing: '0.1em', marginTop: 0 }}>{t('musicPref')}</h3>
+        <h3 style={{ fontSize: 13, letterSpacing: '0.1em', marginTop: 0 }}>{t('subscription')}</h3>
+        <p style={{ fontSize: 13, margin: '0 0 10px', opacity: 0.85 }}>
+          {billing.tier === 'guru' ? t('planGuru') : billing.tier === 'plus' ? t('planPlus') : t('planFree')}
+        </p>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {billing.tier !== 'guru' && (
+            <button className="sc-btn" style={{ padding: '8px 16px' }} onClick={() => showPlans(billing.tier === 'plus' ? 'guru' : 'plus')}>{t('seePlans')}</button>
+          )}
+          {billing.managementUrl && (
+            <a className="sc-btn" style={{ padding: '8px 16px', textDecoration: 'none' }} href={billing.managementUrl} target="_blank" rel="noreferrer">{t('manageSubscription')}</a>
+          )}
+          {billingAvailable && (
+            <button className="sc-chip" onClick={() => { void restorePurchases(); }}>{t('restorePurchases')}</button>
+          )}
+        </div>
+      </section>
+
+      <section className="sc-panel" style={{ padding: 18, width: '100%', maxWidth: 420, marginTop: 14, opacity: canChoose ? 1 : 0.75 }}>
+        <h3 style={{ fontSize: 13, letterSpacing: '0.1em', marginTop: 0 }}>{t('musicPref')}{canChoose ? '' : ` · ${t('lockedPlus')}`}</h3>
         <div style={chips}>
           {MUSICS.map((m) => (
-            <button key={m} type="button" className="sc-chip" aria-pressed={prefs.music === m} onClick={() => updatePrefs({ music: m })}>
+            <button key={m} type="button" className="sc-chip" aria-pressed={prefs.music === m} onClick={() => (canChoose ? updatePrefs({ music: m }) : showPlans('plus'))}>
               {t(MUSIC_LABEL[m])}
             </button>
           ))}
@@ -129,7 +150,7 @@ export default function Profile({
         <h3 style={{ fontSize: 13, letterSpacing: '0.1em', marginTop: 18 }}>{t('voiceGuru')}</h3>
         <div style={chips}>
           {VOICES.map((v) => (
-            <button key={v} type="button" className="sc-chip" aria-pressed={prefs.voice === v} onClick={() => updatePrefs({ voice: v })}>
+            <button key={v} type="button" className="sc-chip" aria-pressed={prefs.voice === v} onClick={() => (canChoose ? updatePrefs({ voice: v }) : showPlans('plus'))}>
               {t(VOICE_LABEL[v])}
             </button>
           ))}

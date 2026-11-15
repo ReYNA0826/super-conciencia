@@ -59,3 +59,25 @@ export function formatGathering(g: Gathering, lang: 'es' | 'en'): string {
     weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', hour12: true,
   }).format(g.startsAt);
 }
+
+// --- Registro a los encuentros astrales (código de invitación o pago por evento) --------
+
+/** Ids de los encuentros en los que esta persona ya está registrada. */
+export async function loadMyRegistrations(userId: string | null): Promise<Set<string>> {
+  if (!supabase || !userId) return new Set();
+  const { data, error } = await supabase.from('gathering_registrations').select('gathering_id').eq('user_id', userId);
+  if (error || !data) return new Set();
+  return new Set((data as { gathering_id: string }[]).map((r) => r.gathering_id));
+}
+
+export async function registerWithCode(gatheringId: string, code: string): Promise<boolean> {
+  if (!supabase) return false;
+  const { data, error } = await supabase.rpc('register_gathering_with_code', { p_gathering: gatheringId, p_code: code });
+  return !error && data === true;
+}
+
+export async function registerPaid(gatheringId: string, transactionId: string): Promise<boolean> {
+  if (!supabase) return false;
+  const { data, error } = await supabase.rpc('register_gathering_paid', { p_gathering: gatheringId, p_transaction: transactionId });
+  return !error && data === true;
+}
