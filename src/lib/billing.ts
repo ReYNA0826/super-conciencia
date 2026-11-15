@@ -45,7 +45,11 @@ const API_KEY: string | undefined = Capacitor.getPlatform() === 'ios'
 export const billingAvailable = Capacitor.isNativePlatform() && Boolean(API_KEY);
 
 // Solo para probar en el navegador durante el desarrollo: VITE_DEV_TIER=plus|guru.
-const DEV_TIER = env.DEV && (env.VITE_DEV_TIER === 'plus' || env.VITE_DEV_TIER === 'guru') ? env.VITE_DEV_TIER as Tier : null;
+// VITE_BETA_TIER: solo para la beta interna de TestFlight (identificador .beta), donde aún no hay
+// tienda conectada: abre todo para que el equipo pueda probar. Se pasa en la línea de comandos al
+// compilar esa beta; NUNCA va en un archivo .env ni en la versión de la tienda.
+const FORCED = env.DEV ? env.VITE_DEV_TIER : env.VITE_BETA_TIER;
+const DEV_TIER = FORCED === 'plus' || FORCED === 'guru' ? FORCED as Tier : null;
 
 export const TIER_RANK: Record<Tier, number> = { free: 0, plus: 1, guru: 2 };
 export function hasTier(current: Tier, needed: Tier): boolean {
