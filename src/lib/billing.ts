@@ -8,8 +8,8 @@
  *
  * Niveles de acceso (modelo de Reyna, 14-nov):
  *   free  → niveles 1–4 con voz y música predeterminadas.
- *   plus  → «Suscripción»: niveles 5–6 y elegir voz y música.
- *   guru  → «Suscripción superior»: todo lo anterior + conversar con Gurú.
+ *   plus  → «Premium» (US$7.99 mes · 49.99 año): niveles 5–6 y elegir voz y música.
+ *   guru  → «Premium con Gurú» (US$14.99 · 119.99, 20 min de Gurú al mes): todo lo anterior + conversar con Gurú.
  * Encuentros astrales del Éter: código de invitación o pago por evento (compra consumible).
  *
  * Sin llaves de RevenueCat (web, desarrollo) no se puede comprar: todo queda en «free».

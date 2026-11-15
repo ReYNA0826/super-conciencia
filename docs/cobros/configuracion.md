@@ -4,9 +4,9 @@
 - `src/lib/billing.ts`: compras con RevenueCat (versión fija 14.0.0) sobre Apple In-App Purchase y Google Play Billing.
 - `src/components/Plans.tsx`: pantalla «Elige tu camino». Muestra los precios reales de la tienda, mensual o anual, y tiene «Restaurar compras», el texto legal de renovación y los enlaces a Términos y Privacidad (Apple los exige).
 - Candados:
-  - **Niveles 5 y 6:** piden la Suscripción.
-  - **Conversar con Gurú:** pide la Suscripción superior.
-  - **Elegir voz y música** (Perfil, reproductor y Santuario): pide la Suscripción. Sin ella suena la voz Katie con la música «Santuario del Éter».
+  - **Niveles 5 y 6:** piden Premium.
+  - **Conversar con Gurú:** pide la Premium con Gurú.
+  - **Elegir voz y música** (Perfil, reproductor y Santuario): pide Premium. Sin ella suena la voz Katie con la música «Santuario del Éter».
 - **Encuentros astrales:** en el calendario del Santuario, cada encuentro tiene «Regístrate». Se entra pagando el evento o con un código de invitación. Para unirse a un encuentro en curso hay que estar registrado.
 - **Supabase** (migración `registro_encuentros_astrales`):
   - Tabla `gathering_registrations`: quién se registró y cómo.
@@ -14,13 +14,24 @@
   - Funciones `register_gathering_with_code` y `register_gathering_paid`.
   - Para poner el código de un encuentro: `insert into gathering_codes (gathering_id, code) values ('<id>', 'ETER-NOV-22');`
 
+## Precios elegidos por Reyna (15-nov-2026)
+| Plan | Mensual | Anual |
+|---|---|---|
+| Gratis | niveles 1–4, voz y música fijas | — |
+| **Premium** (`sc_plus_*`) | **US$7.99** | **US$49.99** |
+| **Premium con Gurú** (`sc_guru_*`) | **US$14.99**, con 20 min de Gurú al mes | **US$119.99**, con 20 min al mes |
+| **Encuentro astral** (`sc_encuentro`) | **US$4.99** por evento, o gratis con código de invitación | |
+
+Condición de Reyna: este precio de lanzamiento vale siempre que haya suficiente contenido de pago y nuevas publicaciones con regularidad.
+El límite de Gurú se activa en ElevenLabs el mismo día que salga la versión nueva, no antes, para no romper las versiones de prueba instaladas.
+
 ## Productos (los mismos identificadores en Apple, Google y RevenueCat)
 | Identificador | Tipo | Da acceso a |
 |---|---|---|
-| `sc_plus_mensual` | Suscripción auto-renovable, 1 mes | Suscripción |
-| `sc_plus_anual` | Suscripción auto-renovable, 1 año | Suscripción |
-| `sc_guru_mensual` | Suscripción auto-renovable, 1 mes | Suscripción superior |
-| `sc_guru_anual` | Suscripción auto-renovable, 1 año | Suscripción superior |
+| `sc_plus_mensual` | Suscripción auto-renovable, 1 mes | Premium |
+| `sc_plus_anual` | Suscripción auto-renovable, 1 año | Premium |
+| `sc_guru_mensual` | Suscripción auto-renovable, 1 mes | Premium con Gurú |
+| `sc_guru_anual` | Suscripción auto-renovable, 1 año | Premium con Gurú |
 | `sc_encuentro` | Consumible | Un encuentro astral |
 
 - **Apple:** un solo grupo de suscripción, «Súper Conciencia». Los planes de Gurú van en el nivel más alto del grupo, para que subir o bajar de plan funcione solo.
@@ -41,7 +52,7 @@
 
 ## Pendiente antes de abrir el cobro al público
 - **Límite de minutos con Gurú:** hoy la app conecta directo con el agente de ElevenLabs. Hay que pasar por una función de Supabase que:
-  - compruebe que la persona tiene la Suscripción superior,
+  - compruebe que la persona tiene la Premium con Gurú,
   - cuente sus minutos del mes,
   - entregue un enlace firmado, y en ElevenLabs activar que el agente exija autenticación.
   Sin esto, el costo de Gurú no tiene techo.
@@ -60,4 +71,4 @@
 Fuentes: mindkindly.com/articles/wellness-app-costs-2026, muzencosmos.com (comparativa 2026), declutterthemind.com/blog/best-meditation-apps.
 
 ## Costo de Gurú
-ElevenLabs estimó cerca de **US$0.46 por minuto** con Claude Sonnet 4.6, el modelo actual de Gurú, y unos **US$0.23 por minuto** con Gemini 3.5 Flash. Por eso la Suscripción superior debe incluir un número limitado de minutos al mes.
+ElevenLabs estimó cerca de **US$0.46 por minuto** con Claude Sonnet 4.6, el modelo actual de Gurú, y unos **US$0.23 por minuto** con Gemini 3.5 Flash. Por eso la Premium con Gurú debe incluir un número limitado de minutos al mes.
