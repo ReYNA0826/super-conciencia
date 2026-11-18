@@ -86,6 +86,25 @@ Si faltaran, las funciones responden `not_configured` y la app sigue como antes 
 - **Efecto en iPhone:** la beta de TestFlight 1.0 (4) ya no reproduce los niveles 5 y 6 ni conecta con Gurú, hasta que exista la versión de iOS con cobros.
 - **Pendiente:** aviso en tiempo real de Play (rol Publicador de Pub/Sub para `google-play-developer-notifications@system.gserviceaccount.com` en el tema `Play-Store-Notifications`; no bloquea compras) y todo lo de Apple (sin respuesta al caso 30000015506606): Paid Applications Agreement, app iOS en RevenueCat, productos en App Store Connect, `VITE_REVENUECAT_IOS_KEY` y build con bundle `com.dreameducation.superconciencia`.
 
+## iPhone — estado al 18-nov-2026 (madrugada)
+Se adelantó todo en la cuenta actual de Apple (Elio Vazquez, equipo 9MC8QKKWK9), que Apple convertirá a Dream Education, Corp.
+
+- **App definitiva:** «Súper Conciencia», Apple ID `6836169691`, bundle `com.dreameducation.superconciencia`. La de pruebas («Super Conciencia», `6834600713`, bundle `.beta`) no se publica.
+- **Compras creadas en App Store Connect:** grupo «Súper Conciencia» con `sc_guru_mensual`, `sc_guru_anual` (nivel 1) y `sc_plus_mensual`, `sc_plus_anual` (nivel 2); `sc_encuentro` como consumible. Precios de EE. UU. iguales a los de Google y equivalentes en los otros 174 países.
+- **Ficha:** textos en `docs/tienda/app-store.md` (español e inglés), categorías, 5 capturas de `store-assets/screenshots-ios/`, notas para el revisor y cuestionario de edad.
+- **Versión 1.0 (1)** subida a App Store Connect con la clave `VITE_REVENUECAT_IOS_KEY`.
+- **RevenueCat:** app de App Store creada con su llave de compras.
+- **Herramientas:** `scripts/app-store-connect/` (cliente de la API con la llave «Claude Super Conciencia», que vive fuera del repo en `~/.appstoreconnect/private_keys/`). Para subir builds se usa la sesión de Xcode, no la llave.
+
+**Bloqueo:** el contrato «Paid Apps Agreement» está aceptado pero sin banco ni impuestos. El formulario fija «Elio Vazquez» como titular y no cuadra con el EIN de Dream Education, así que se espera la conversión de la cuenta (mensaje de seguimiento enviado a Apple el 17-nov). Sin ese contrato activo no cargan las compras en iPhone.
+
+**Falta en iPhone:**
+1. En RevenueCat, importar los 5 productos de App Store y ligarlos: los 4 planes a `suscripcion`, los 2 de Gurú también a `guru`.
+2. Tras la conversión: banco e impuestos a nombre de Dream Education.
+3. Probar una compra en iPhone (cuenta sandbox) y revisar `subscriptions`.
+4. En App Store Connect: contraseña de la cuenta del revisor y datos de contacto, etiquetas de privacidad (App Privacy), elegir el build en la versión, adjuntar las compras a la versión y enviar a revisión.
+5. Poner en App Store Connect la URL de avisos del servidor que da RevenueCat.
+
 ## Precios de referencia (consultados el 15-nov-2026, en USD)
 | App | Mensual | Anual |
 |---|---|---|
