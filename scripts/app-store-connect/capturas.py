@@ -8,7 +8,7 @@ else:
     st,d=call('POST','/v1/appScreenshotSets',{'data':{'type':'appScreenshotSets','attributes':{'screenshotDisplayType':'APP_IPHONE_67'},'relationships':{'appStoreVersionLocalization':{'data':{'type':'appStoreVersionLocalizations','id':loc}}}}})
     print('set',st,'' if st<300 else json.dumps(d)[:300]); sid=d['data']['id']
 st,d=call('GET',f'/v1/appScreenshotSets/{sid}/appScreenshots'); already={s['attributes']['fileName'] for s in d['data']}
-for f in sorted(glob.glob('/Users/reynavazquez/Projects/super-conciencia/store-assets/screenshots-ios/*.png')):
+for f in sorted(glob.glob('/Users/reynavazquez/Projects/super-conciencia/store-assets/screenshots-ios/[0-9]-*.png')):
     name=os.path.basename(f)
     if name in already: print('ya',name); continue
     data=open(f,'rb').read()
