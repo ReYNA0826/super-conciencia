@@ -62,17 +62,25 @@ Todo vive en Supabase. La app nunca puede darse acceso a sí misma.
 
 Probado en la base el 15-nov: sin suscripción 0 audios, con suscripción 128, vencida 0; encuentro sin pago no registra, con pago sí, y un pago no sirve para dos encuentros; minutos de Gurú suman bien.
 
-### Secretos que faltan (los pega Reyna en Supabase → Edge Functions → Secrets)
+### Secretos (ya están en Supabase desde el 16-nov-2026)
 - `REVENUECAT_WEBHOOK_SECRET`: una frase larga inventada; la misma se pone en RevenueCat → Integrations → Webhooks → Authorization header. URL del webhook: `https://qtofeecosgawmqhwagyv.supabase.co/functions/v1/revenuecat-webhook`
 - `ELEVENLABS_API_KEY` y `ELEVENLABS_AGENT_ID`: para los pases de Gurú.
 
-Mientras falten, las funciones responden `not_configured` y la app sigue como antes (Gurú conecta directo y los audios salen del bucket público).
+Si faltaran, las funciones responden `not_configured` y la app sigue como antes (Gurú conecta directo y los audios salen del bucket público). El id del agente es público: si ese secreto está mal escrito, `guru-session` usa el de Gurú (arreglo del 17-nov, versión 6 de la función).
 
 ### El día del lanzamiento (en este orden)
 1. Pegar los tres secretos y crear el webhook en RevenueCat. Hacer una compra de prueba y ver la fila en `subscriptions`.
 2. En ElevenLabs → agente Gurú → Seguridad: activar «Requerir autenticación». Desde ese momento Gurú solo responde con pase del servidor (las betas viejas dejan de conectar).
 3. Borrar del bucket público `meditaciones` las carpetas `nivel-5/` y `nivel-6/`.
 4. Compilar la versión de tienda SIN `VITE_BETA_TIER`.
+
+## Estado al 17-nov-2026 (prueba real en Android)
+- **Google Play:** las 4 suscripciones y `sc_encuentro` están activas. Versión 11 en prueba interna desde el 17-nov (lista «Pruebas Android»; esa lista también es la de verificadores de licencias, así que sus compras no cobran).
+- **Compra de prueba verificada con una verificadora (Premium con Gurú anual):** el webhook escribió `subscriptions`, la renovación de prueba (cada 30 min) actualizó la fecha, y Gurú entregó pase del servidor y descontó 153 s de los 20 minutos.
+- **Falla encontrada y arreglada:** el secreto `ELEVENLABS_AGENT_ID` no era un id válido; ElevenLabs respondía 400 y la app caía a la conexión directa sin avisar. Con «requerir autenticación» activado, Gurú habría dejado de funcionar.
+- **Falla encontrada y arreglada en el código (va en la versión 12):** como invitado se podía pagar sin recibir acceso, porque el servidor liga la compra a la cuenta. Ahora la pantalla de planes y el pago de encuentros piden cuenta antes de cobrar.
+- **Cuenta para el revisor de Google:** `playreview@dreameducationus.com`. Tiene `guru` por un año en RevenueCat (Customers → Grant entitlement) y su fila en `subscriptions` se puso a mano, porque un permiso regalado en RevenueCat no llega por el webhook como suscripción. Hay que renovar las dos cosas antes del 18-nov-2027. La contraseña está en `.revisor-play.local` (no se sube al repo) y en Play Console → Contenido de la app → Detalles de acceso.
+- **Pendiente:** probar el pago de un encuentro, aviso en tiempo real de Play (rol Publicador de Pub/Sub), versión 12 a producción, y todo lo de Apple (sin respuesta al caso 30000015506606).
 
 ## Precios de referencia (consultados el 15-nov-2026, en USD)
 | App | Mensual | Anual |
