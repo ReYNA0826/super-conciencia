@@ -226,7 +226,12 @@ export default function App() {
         )}
       </main>
       {plansRequest && (
-        <Plans need={plansRequest.need} onClose={() => closePlans(false)} onUnlocked={() => closePlans(true)} />
+        <Plans
+          need={plansRequest.need}
+          onClose={() => closePlans(false)}
+          onUnlocked={() => closePlans(true)}
+          onNeedAccount={() => { closePlans(false); setScreen('auth'); }}
+        />
       )}
       {tab && <TabBar active={tab} onSelect={(next) => setScreen(SCREEN_OF[next])} />}
     </>

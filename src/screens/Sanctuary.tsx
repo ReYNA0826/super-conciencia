@@ -104,6 +104,7 @@ export default function Sanctuary({ userId, onBack, onComplete, onOpenSession }:
     setRegBusy(false);
     if (ok) markRegistered(g.id);
     else if (result === 'ok') setRegMsg(t('encounterPayPending'));
+    else if (result === 'needs_account') setRegMsg(t('plansNeedAccount'));
     else if (result !== 'cancelled') setRegMsg(t('encounterPayError'));
   };
   /** Unirse al encuentro en curso: solo con registro; si no, lleva al calendario a registrarse. */

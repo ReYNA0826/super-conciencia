@@ -83,9 +83,14 @@ function fromCustomerInfo(info: CustomerInfo): State {
 
 // --- Arranque y cuenta ------------------------------------------------------------------
 let configured: Promise<void> | null = null;
+// Cuenta de la app con la que se compra. Sin cuenta (invitado) no se deja comprar: el servidor
+// no sabría de quién es el pago y la persona pagaría sin recibir el acceso.
+let accountId: string | null = null;
+export function hasAccount(): boolean { return Boolean(accountId); }
 
 /** Se llama al abrir la app y cada vez que cambia la cuenta (null = invitado). */
 export function initBilling(userId: string | null): Promise<void> {
+  accountId = userId;
   if (!billingAvailable) return Promise.resolve();
   if (!configured) {
     configured = (async () => {
@@ -135,7 +140,7 @@ export async function loadPlans(): Promise<PlanOffer[]> {
   }
 }
 
-export type PurchaseResult = 'ok' | 'cancelled' | 'error';
+export type PurchaseResult = 'ok' | 'cancelled' | 'error' | 'needs_account';
 
 function isCancel(e: unknown): boolean {
   const err = e as { code?: string; userCancelled?: boolean };
@@ -143,6 +148,7 @@ function isCancel(e: unknown): boolean {
 }
 
 export async function buyPlan(offer: PlanOffer): Promise<PurchaseResult> {
+  if (!accountId) return 'needs_account';
   try {
     const { customerInfo } = await Purchases.purchaseStoreProduct({ product: offer.product });
     setState(fromCustomerInfo(customerInfo));
@@ -178,6 +184,7 @@ export async function loadEncounterProduct(): Promise<PurchasesStoreProduct | nu
 
 /** Paga un encuentro. Devuelve el id de la transacción para registrarlo en el servidor. */
 export async function buyEncounter(product: PurchasesStoreProduct): Promise<{ result: PurchaseResult; transactionId?: string }> {
+  if (!accountId) return { result: 'needs_account' };
   try {
     const { transaction } = await Purchases.purchaseStoreProduct({ product });
     return { result: 'ok', transactionId: transaction.transactionIdentifier };

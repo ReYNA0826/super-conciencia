@@ -15,16 +15,19 @@ type Props = {
   onClose: () => void;
   /** Se llama cuando ya tiene el acceso que necesitaba. */
   onUnlocked: () => void;
+  /** La persona es invitada: hay que llevarla a crear su cuenta o entrar antes de comprar. */
+  onNeedAccount: () => void;
 };
 
 /** Pantalla de suscripciones: Suscripción y Suscripción superior, mensual o anual. */
-export default function Plans({ need, onClose, onUnlocked }: Props) {
+export default function Plans({ need, onClose, onUnlocked, onNeedAccount }: Props) {
   const { t } = useLang();
   const tier = useTier();
   const [annual, setAnnual] = useState(true);
   const [offers, setOffers] = useState<PlanOffer[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [needAccount, setNeedAccount] = useState(false);
 
   useEffect(() => { void loadPlans().then(setOffers); }, []);
   useEffect(() => { if (hasTier(tier, need)) onUnlocked(); }, [tier, need, onUnlocked]);
@@ -38,7 +41,8 @@ export default function Plans({ need, onClose, onUnlocked }: Props) {
     setMsg(null);
     const result = await buyPlan(o);
     setBusy(false);
-    if (result === 'error') setMsg(t('plansError'));
+    if (result === 'needs_account') setNeedAccount(true);
+    else if (result === 'error') setMsg(t('plansError'));
   };
 
   const restore = async () => {
@@ -87,6 +91,12 @@ export default function Plans({ need, onClose, onUnlocked }: Props) {
 
         {!billingAvailable && <p style={small}>{t('plansOnlyInApp')}</p>}
         {msg && <p style={{ ...small, opacity: 0.9 }} role="status">{msg}</p>}
+        {needAccount && (
+          <div role="status" style={{ marginTop: 10 }}>
+            <p style={{ ...small, opacity: 0.9, margin: 0 }}>{t('plansNeedAccount')}</p>
+            <button className="sc-btn" style={{ marginTop: 8 }} onClick={onNeedAccount}>{t('plansGoToAccount')}</button>
+          </div>
+        )}
 
         <p style={legal}>{t('plansLegal')}</p>
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
