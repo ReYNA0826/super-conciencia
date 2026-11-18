@@ -68,7 +68,7 @@ Probado en la base el 15-nov: sin suscripción 0 audios, con suscripción 128, v
 
 Si faltaran, las funciones responden `not_configured` y la app sigue como antes (Gurú conecta directo y los audios salen del bucket público). El id del agente es público: si ese secreto está mal escrito, `guru-session` usa el de Gurú (arreglo del 17-nov, versión 6 de la función).
 
-### El día del lanzamiento (en este orden)
+### El día del lanzamiento (hecho el 17-nov-2026; se deja como referencia)
 1. Pegar los tres secretos y crear el webhook en RevenueCat. Hacer una compra de prueba y ver la fila en `subscriptions`.
 2. En ElevenLabs → agente Gurú → Seguridad: activar «Requerir autenticación». Desde ese momento Gurú solo responde con pase del servidor (las betas viejas dejan de conectar).
 3. Borrar del bucket público `meditaciones` las carpetas `nivel-5/` y `nivel-6/`.
@@ -80,7 +80,11 @@ Si faltaran, las funciones responden `not_configured` y la app sigue como antes 
 - **Falla encontrada y arreglada:** el secreto `ELEVENLABS_AGENT_ID` no era un id válido; ElevenLabs respondía 400 y la app caía a la conexión directa sin avisar. Con «requerir autenticación» activado, Gurú habría dejado de funcionar.
 - **Falla encontrada y arreglada en el código (va en la versión 12):** como invitado se podía pagar sin recibir acceso, porque el servidor liga la compra a la cuenta. Ahora la pantalla de planes y el pago de encuentros piden cuenta antes de cobrar.
 - **Cuenta para el revisor de Google:** `playreview@dreameducationus.com`. Tiene `guru` por un año en RevenueCat (Customers → Grant entitlement) y su fila en `subscriptions` se puso a mano, porque un permiso regalado en RevenueCat no llega por el webhook como suscripción. Hay que renovar las dos cosas antes del 18-nov-2027. La contraseña está en `.revisor-play.local` (no se sube al repo) y en Play Console → Contenido de la app → Detalles de acceso.
-- **Pendiente:** probar el pago de un encuentro, aviso en tiempo real de Play (rol Publicador de Pub/Sub), versión 12 a producción, y todo lo de Apple (sin respuesta al caso 30000015506606).
+- **Encuentro astral verificado:** pago de prueba → `purchase_credits` → registro «paid» en el encuentro. El encuentro y el pago de prueba se borraron después.
+- **Día de lanzamiento hecho (17-nov, con el sí de Reyna):** borrados los 128 audios de `nivel-5/` y `nivel-6/` del bucket público `meditaciones` (siguen en `premium` y en `store-assets/`); activado «requerir autenticación» en el agente Gurú (sin pase del servidor no conecta); el reproductor espera las direcciones firmadas antes de dejar comenzar un nivel 5 o 6.
+- **Versión 12 (versionCode 12):** en prueba interna y **enviada a revisión de producción en Google Play** el 17-nov. La publicación administrada está activa: cuando Google apruebe, hay que pulsar «Publicar cambios» en Play Console → Descripción general de la publicación para que salga al público.
+- **Efecto en iPhone:** la beta de TestFlight 1.0 (4) ya no reproduce los niveles 5 y 6 ni conecta con Gurú, hasta que exista la versión de iOS con cobros.
+- **Pendiente:** aviso en tiempo real de Play (rol Publicador de Pub/Sub para `google-play-developer-notifications@system.gserviceaccount.com` en el tema `Play-Store-Notifications`; no bloquea compras) y todo lo de Apple (sin respuesta al caso 30000015506606): Paid Applications Agreement, app iOS en RevenueCat, productos en App Store Connect, `VITE_REVENUECAT_IOS_KEY` y build con bundle `com.dreameducation.superconciencia`.
 
 ## Precios de referencia (consultados el 15-nov-2026, en USD)
 | App | Mensual | Anual |
