@@ -4,7 +4,7 @@
 //
 // Secretos (Supabase → Edge Functions → Secrets):
 //   ELEVENLABS_API_KEY   clave con permiso de ElevenAgents
-//   ELEVENLABS_AGENT_ID  id del agente Gurú
+//   ELEVENLABS_AGENT_ID  id del agente Gurú (opcional: si falta o está mal escrito, se usa el de Gurú)
 // Mientras falten, responde `not_configured` y la app conecta como antes (sin límite).
 // El día del lanzamiento se activa en ElevenLabs que el agente exija autenticación.
 import { createClient } from 'jsr:@supabase/supabase-js@2';
@@ -13,7 +13,11 @@ const MONTHLY_SECONDS = 20 * 60; // 20 minutos al mes (decisión de Reyna, 15-no
 const MIN_TO_START = 30;
 
 const KEY = Deno.env.get('ELEVENLABS_API_KEY');
-const AGENT = Deno.env.get('ELEVENLABS_AGENT_ID');
+// El id del agente es público (va dentro de la app). Si el secreto se pegó con espacios, comillas
+// u otro valor que no es un id de agente, se usa el de Gurú para que el pase no falle.
+const GURU_AGENT = 'agent_8301m77qfng3ecd86339ekq953mj';
+const AGENT_ENV = (Deno.env.get('ELEVENLABS_AGENT_ID') ?? '').trim().replace(/^["']|["']$/g, '');
+const AGENT = /^agent_[a-z0-9]+$/.test(AGENT_ENV) ? AGENT_ENV : GURU_AGENT;
 const URL_ = Deno.env.get('SUPABASE_URL')!;
 const db = createClient(URL_, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
@@ -61,7 +65,11 @@ Deno.serve(async (req) => {
 
   const r = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${encodeURIComponent(AGENT)}`,
     { headers: { 'xi-api-key': KEY } });
-  if (!r.ok) return json({ error: 'guru_unavailable' }, 502);
+  if (!r.ok) {
+    // Deja en el registro por qué ElevenLabs no dio el pase (clave sin permiso, agente equivocado…).
+    console.error('elevenlabs_token_failed', r.status, (await r.text()).slice(0, 300));
+    return json({ error: 'guru_unavailable' }, 502);
+  }
   const { token } = await r.json();
 
   const { data: session, error } = await db.from('guru_sessions')
