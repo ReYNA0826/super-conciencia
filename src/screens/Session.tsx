@@ -72,12 +72,23 @@ export default function Session({ sessionId, onClose, onComplete }: Props) {
   // Audios Premium: se piden por adelantado las direcciones firmadas del bucket privado, para
   // tenerlas listas cuando la persona toque «Comenzar» (el toque no puede esperar a la red).
   const signed = useRef<{ version: string; urls: string[] } | null>(null);
+  // Estos audios ya no existen en el bucket público: sin las direcciones firmadas no hay nada que
+  // reproducir. El botón de comenzar espera a tenerlas y, si fallan, deja reintentar.
+  const premium = Boolean(session && isPremiumAudio(session));
+  const [premiumAudio, setPremiumAudio] = useState<'loading' | 'ready' | 'failed'>('loading');
+  const [premiumTry, setPremiumTry] = useState(0);
   useEffect(() => {
     if (!session || !isPremiumAudio(session)) return;
     let alive = true;
-    void premiumAudioUrls(session, version).then((urls) => { if (alive && urls) signed.current = { version, urls }; });
+    setPremiumAudio('loading');
+    void premiumAudioUrls(session, version).then((urls) => {
+      if (!alive) return;
+      if (urls) signed.current = { version, urls };
+      setPremiumAudio(urls ? 'ready' : 'failed');
+    });
     return () => { alive = false; };
-  }, [session, version]);
+  }, [session, version, premiumTry]);
+  const audioWaiting = premium && premiumAudio !== 'ready';
   const minutes = useMemo(
     () => (session ? sessionMinutes(session, version, guide) : 0),
     [session, version, guide],
@@ -274,15 +285,18 @@ export default function Session({ sessionId, onClose, onComplete }: Props) {
 
           {resume ? (
             <div style={stack}>
-              <button className="sc-btn" onClick={() => begin({ index: resume.index, offset: resume.offset })}>
+              <button className="sc-btn" disabled={audioWaiting} onClick={() => begin({ index: resume.index, offset: resume.offset })}>
                 {t('resumeAt').replace('{m}', String(Math.max(1, Math.round(resume.position / 60))))}
               </button>
-              <button style={quiet} onClick={() => { clearResume(sessionId); begin(); }}>{t('startOver')}</button>
+              <button style={quiet} disabled={audioWaiting} onClick={() => { clearResume(sessionId); begin(); }}>{t('startOver')}</button>
             </div>
           ) : (
             <div style={stack}>
-              <button className="sc-btn" onClick={() => begin()}>{t('beginSession')}</button>
+              <button className="sc-btn" disabled={audioWaiting} onClick={() => begin()}>{t('beginSession')}</button>
             </div>
+          )}
+          {premium && premiumAudio === 'failed' && (
+            <button type="button" style={quiet} onClick={() => setPremiumTry((n) => n + 1)}>{t('premiumAudioFailed')}</button>
           )}
           <span style={note}>{t('needsInternet')}</span>
         </Card>
