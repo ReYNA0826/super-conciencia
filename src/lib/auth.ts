@@ -21,16 +21,21 @@ export async function signInWithPassword(email: string, password: string): Promi
   return { error: error?.message ?? null };
 }
 
-export async function signUpWithPassword(email: string, password: string): Promise<{ error: string | null }> {
+/**
+ * Crea la cuenta. `signedIn` es true cuando Supabase ya abrió la sesión (la confirmación por
+ * correo está desactivada); si algún día se vuelve a activar, será false y la app pedirá
+ * revisar el correo.
+ */
+export async function signUpWithPassword(email: string, password: string): Promise<{ error: string | null; signedIn?: boolean }> {
   if (!supabase) return { error: 'no-backend' };
   // Sin esto, el enlace de "confirma tu correo" manda a la Site URL del proyecto
   // (por defecto localhost) y en el teléfono termina en una página de error.
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { emailRedirectTo: authRedirectUrl() },
   });
-  return { error: error?.message ?? null };
+  return { error: error?.message ?? null, signedIn: Boolean(data?.session) };
 }
 
 /**

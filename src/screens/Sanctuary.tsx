@@ -9,7 +9,7 @@ import {
 import { buyEncounter, hasTier, loadEncounterProduct, requirePlan, showPlans, useTier } from '../lib/billing';
 import { pauseAmbient, resumeAmbient, startAmbient, stopAmbient } from '../lib/ambient';
 import { buildSanctuarySession } from '../data/sanctuary';
-import { GuruLimitError, guruConfigured, startGuru, type GuruSession, type GuruStatus } from '../lib/guru';
+import { GuruLimitError, GuruMicError, describeError, guruConfigured, startGuru, type GuruSession, type GuruStatus } from '../lib/guru';
 import { FREE_PRESET, SESSIONS } from '../data/sessions';
 import {
   DURATIONS, GOALS, MUSICS, MUSIC_LABEL, VOICES,
@@ -49,6 +49,8 @@ export default function Sanctuary({ userId, onBack, onComplete, onOpenSession }:
   const [guruStatus, setGuruStatus] = useState<GuruStatus | null>(null);
   const [guruNote, setGuruNote] = useState(false);
   const [guruLimit, setGuruLimit] = useState(false);
+  const [guruMic, setGuruMic] = useState<'denied' | 'unavailable' | null>(null);
+  const [guruErrorDetail, setGuruErrorDetail] = useState<string | null>(null);
   const guru = useRef<GuruSession | null>(null);
   const guruRun = useRef(0);
 
@@ -195,6 +197,8 @@ export default function Sanctuary({ userId, onBack, onComplete, onOpenSession }:
 
   const activateVoice = async () => {
     if (!guruConfigured) { setGuruNote(true); return; }
+    setGuruMic(null);
+    setGuruErrorDetail(null);
     const run = ++guruRun.current;
     setStep('guru');
     try {
@@ -207,7 +211,10 @@ export default function Sanctuary({ userId, onBack, onComplete, onOpenSession }:
       guru.current = session;
     } catch (e) {
       if (guruRun.current !== run) return;
-      if (e instanceof GuruLimitError) { setGuruLimit(true); setStep('consent'); } else setGuruStatus('error');
+      if (e instanceof GuruLimitError) { setGuruLimit(true); setStep('consent'); return; }
+      setGuruMic(e instanceof GuruMicError ? e.reason : null);
+      setGuruErrorDetail(describeError(e));
+      setGuruStatus('error');
     }
   };
 
@@ -269,7 +276,6 @@ export default function Sanctuary({ userId, onBack, onComplete, onOpenSession }:
             ))}
           </Row>
           <button className="sc-btn" style={{ marginTop: 18 }} onClick={beginMeditation}>{t('beginMeditation')}</button>
-          <span style={note}>{t('voiceSoon')}</span>
           <button style={quiet} onClick={() => setStep('entry')}>{t('back')}</button>
         </Panel>
       )}
@@ -314,6 +320,12 @@ export default function Sanctuary({ userId, onBack, onComplete, onOpenSession }:
           <p style={{ ...lead, marginTop: 14 }} role="status">
             {t(GURU_LABEL[guruStatus ?? 'connecting'] ?? 'guruConnecting')}
           </p>
+          {guruStatus === 'error' && guruMic && (
+            <p style={{ ...body, opacity: 0.95 }} role="alert">{t(guruMic === 'denied' ? 'guruMicDenied' : 'guruMicUnavailable')}</p>
+          )}
+          {guruStatus === 'error' && guruErrorDetail && (
+            <p style={{ ...body, fontSize: 11, opacity: 0.55 }}>{guruErrorDetail}</p>
+          )}
           <button className="sc-btn" style={{ padding: '9px 22px', fontSize: 13, marginTop: 6 }} onClick={endConversation}>
             {guruStatus === 'error' ? t('back') : t('endConversation')}
           </button>

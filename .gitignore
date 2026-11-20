@@ -34,3 +34,7 @@ store-assets/voz/
 store-assets/audio-originales/v2/
 store-assets/audio-originales/v3/
 store-assets/voz-m4a/
+store-assets/musica-app/
+
+# Archivos temporales de Claude
+Claude outputs/

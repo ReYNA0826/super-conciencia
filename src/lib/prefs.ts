@@ -6,7 +6,9 @@ import type { StringKey } from '../i18n/strings';
 export const DURATIONS = [3, 5, 10, 20] as const;
 export const VOICES = ['female', 'male'] as const;
 /** Música propia de El Mapa de Tu Bienestar (Reyna, 14-nov). Archivos en public/audio/<clave>.m4a. */
-export const MUSICS = ['santuario', 'refugio', 'bosque', 'ceremonial', 'amanecer', 'saturno', 'mente', 'mar', 'silence'] as const;
+export const MUSICS = ['santuario', 'refugio', 'bosque', 'ceremonial', 'amanecer', 'saturno', 'mente', 'mar',
+  // 19-nov: pistas tranquilas nuevas de Reyna (también en la sección «Música»).
+  'horizontal-de-luz', 'sea-tides', 'open-horizon', 'stillness-within', 'forest-dawn', 'silence'] as const;
 export const GOALS = ['calm', 'focus', 'rest', 'connection'] as const;
 
 export type DurationChoice = (typeof DURATIONS)[number];
@@ -17,7 +19,8 @@ export type GoalChoice = (typeof GOALS)[number];
 /** Nombre visible de cada pista (claves de i18n/strings). */
 export const MUSIC_LABEL: Record<MusicChoice, StringKey> = {
   santuario: 'musicSantuario', refugio: 'musicRefugio', bosque: 'musicBosque', ceremonial: 'musicCeremonial',
-  amanecer: 'musicAmanecer', saturno: 'musicSaturno', mente: 'musicMente', mar: 'musicMar', silence: 'musicSilence',
+  amanecer: 'musicAmanecer', saturno: 'musicSaturno', mente: 'musicMente', mar: 'musicMar', 'horizontal-de-luz': 'musicHorizontal', 'sea-tides': 'musicSeaTides',
+  'open-horizon': 'musicOpenHorizon', 'stillness-within': 'musicStillness', 'forest-dawn': 'musicForestDawn', silence: 'musicSilence',
 };
 
 export type SanctuaryPrefs = {

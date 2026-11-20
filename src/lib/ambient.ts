@@ -30,6 +30,12 @@ const TRACKS: Record<MusicChoice, { url: string; gain: number } | null> = {
   saturno: track('saturno'),
   mente: track('mente'),
   mar: track('mar'),
+  // 19-nov: niveladas a −24 dB con ffmpeg (volumedetect), AAC 64 kbps.
+  'horizontal-de-luz': track('horizontal-de-luz'),
+  'sea-tides': track('sea-tides'),
+  'open-horizon': track('open-horizon'),
+  'stillness-within': track('stillness-within'),
+  'forest-dawn': track('forest-dawn'),
   silence: null,
 };
 

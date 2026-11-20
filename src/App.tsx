@@ -12,6 +12,7 @@ import Session from './screens/Session';
 import { recordedSessionsAvailable, sessionForLevel } from './data/sessions';
 import Portal from './screens/Portal';
 import Profile from './screens/Profile';
+import Music from './screens/Music';
 import { isPortalUnlocked, setPortalState } from './lib/portal';
 import { getCurrentUser, onAuthChange, onPasswordRecovery, signOut, hasBackend, type AppUser } from './lib/auth';
 import NewPassword from './screens/NewPassword';
@@ -26,11 +27,11 @@ import { closePlans, initBilling, requirePlan, usePlansRequest } from './lib/bil
 /** Niveles que necesitan la suscripción (modelo de Reyna, 14-nov: 1–4 gratis). */
 const SUBSCRIPTION_LEVELS = [5, 6];
 
-export type Screen = 'onboarding' | 'auth' | 'newPassword' | 'home' | 'universe' | 'meditation' | 'session' | 'portal' | 'profile';
+export type Screen = 'onboarding' | 'auth' | 'newPassword' | 'home' | 'universe' | 'meditation' | 'session' | 'portal' | 'music' | 'profile';
 
 /** Pantallas con la navegación inferior (Inicio, Explorar, Santuario, Perfil). */
-const TAB_OF: Partial<Record<Screen, Tab>> = { home: 'home', universe: 'explore', portal: 'sanctuary', profile: 'profile' };
-const SCREEN_OF: Record<Tab, Screen> = { home: 'home', explore: 'universe', sanctuary: 'portal', profile: 'profile' };
+const TAB_OF: Partial<Record<Screen, Tab>> = { home: 'home', universe: 'explore', portal: 'sanctuary', music: 'music', profile: 'profile' };
+const SCREEN_OF: Record<Tab, Screen> = { home: 'home', explore: 'universe', sanctuary: 'portal', music: 'music', profile: 'profile' };
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('onboarding');
@@ -212,6 +213,7 @@ export default function App() {
             onOpenSession={openSession}
           />
         )}
+        {screen === 'music' && <Music />}
         {screen === 'profile' && (
           <Profile
             completed={completed}

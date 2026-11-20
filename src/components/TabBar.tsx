@@ -3,11 +3,11 @@ import { useLang } from '../i18n/LanguageContext';
 import type { StringKey } from '../i18n/strings';
 
 /**
- * Navegación principal: Inicio, Explorar, Santuario y Perfil.
+ * Navegación principal: Inicio, Explorar, Santuario, Música y Perfil.
  * Reemplaza los números 1–7 que traía la escena de Spline, que obligaban a recordar
  * qué era cada uno. Se oculta sola durante una práctica (body[data-focus="1"]).
  */
-export type Tab = 'home' | 'explore' | 'sanctuary' | 'profile';
+export type Tab = 'home' | 'explore' | 'sanctuary' | 'music' | 'profile';
 
 const TABS: { id: Tab; label: StringKey; icon: ReactNode }[] = [
   {
@@ -33,6 +33,17 @@ const TABS: { id: Tab; label: StringKey; icon: ReactNode }[] = [
         <circle cx="12" cy="12" r="8" />
         <circle cx="12" cy="12" r="3.2" />
         <path d="M12 2v2M12 20v2M2 12h2M20 12h2" />
+      </>
+    ),
+  },
+  {
+    id: 'music',
+    label: 'navMusic',
+    icon: (
+      <>
+        <path d="M9 18V6l10-2v12" />
+        <circle cx="6.5" cy="18" r="2.5" />
+        <circle cx="16.5" cy="16" r="2.5" />
       </>
     ),
   },

@@ -40,13 +40,14 @@ export default function Auth({ linkExpired = false, onAuthed, onGuest }: Props) 
     }
 
     const fn = mode === 'in' ? signInWithPassword : signUpWithPassword;
-    const { error } = await fn(email.trim(), password);
+    const result: { error: string | null; signedIn?: boolean } = await fn(email.trim(), password);
     setBusy(false);
-    if (error) {
-      setMsg(error === 'no-backend' ? t('authError') : error);
+    if (result.error) {
+      setMsg(result.error === 'no-backend' ? t('authError') : result.error);
       return;
     }
-    if (mode === 'up') setMsg(t('checkEmail'));
+    // Con la confirmación por correo desactivada, la cuenta nueva entra directo.
+    if (mode === 'up' && !result.signedIn) setMsg(t('checkEmail'));
     else onAuthed();
   };
 
